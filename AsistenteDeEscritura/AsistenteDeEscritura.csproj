@@ -207,6 +207,12 @@
   <ItemGroup>
     <None Include="Resources\writing2.png" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\partitura.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\poesia.png" />
+  </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>

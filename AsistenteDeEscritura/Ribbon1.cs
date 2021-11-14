@@ -17,5 +17,21 @@ namespace AsistenteDeEscritura
         {
             Globals.ThisAddIn.ResaltarRepeticiones();
         }
+
+        private void button2_Click(object sender, RibbonControlEventArgs e)
+        {
+            Globals.ThisAddIn.ResaltarRitmo();
+        }
+
+        private void Rimas_Click(object sender, RibbonControlEventArgs e)
+        {
+            Globals.ThisAddIn.ResaltaRimas();
+
+        }
+
+        private void button3_Click(object sender, RibbonControlEventArgs e)
+        {
+            Globals.ThisAddIn.Limpiar();
+        }
     }
 }
