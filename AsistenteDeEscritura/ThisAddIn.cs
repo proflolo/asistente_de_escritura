@@ -44,25 +44,27 @@ namespace AsistenteDeEscritura
         }
         private void LimiparPalabrasResaltadas()
         {
-            //foreach(Word.Range palabra in m_palabrasResaltadas)
-            //{
-            //    palabra.Font.Underline = Word.WdUnderline.wdUnderlineNone;
-            //}
-
-            Word.Range documentRange = this.Application.ActiveDocument.Range();
-            foreach(Word.Range palabra in documentRange.Words)
+            try
             {
-                if(palabra.Font.Underline == Word.WdUnderline.wdUnderlineWavy || palabra.Font.Underline == Word.WdUnderline.wdUnderlineWavyHeavy)
+                Word.Range documentRange = this.Application.ActiveDocument.Range();
+                foreach (Word.Range palabra in documentRange.Words)
                 {
-                    palabra.Font.Underline = Word.WdUnderline.wdUnderlineNone;
+                    if (palabra.Font.Underline == Word.WdUnderline.wdUnderlineWavy || palabra.Font.Underline == Word.WdUnderline.wdUnderlineWavyHeavy)
+                    {
+                        palabra.Font.Underline = Word.WdUnderline.wdUnderlineNone;
+                    }
+                }
+                foreach (Word.Comment comment in this.Application.ActiveDocument.Comments)
+                {
+                    if (comment.Range.Text.StartsWith("<AE>"))
+                    {
+                        comment.DeleteRecursively();
+                    }
                 }
             }
-            foreach(Word.Comment comment in this.Application.ActiveDocument.Comments)
+            catch (System.Exception e)
             {
-                if(comment.Range.Text.StartsWith("<AE>"))
-                {
-                    comment.DeleteRecursively();
-                }
+
             }
         }
 

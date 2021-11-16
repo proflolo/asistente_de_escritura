@@ -50,5 +50,10 @@ namespace AsistenteDeEscritura
             Globals.ThisAddIn.ResaltaAdjetivos();
 
         }
+
+        private void button7_Click(object sender, RibbonControlEventArgs e)
+        {
+
+        }
     }
 }
