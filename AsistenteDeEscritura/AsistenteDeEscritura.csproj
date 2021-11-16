@@ -156,6 +156,7 @@
     can be found.
   -->
   <ItemGroup>
+    <Compile Include="Constantes.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -212,6 +213,15 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\poesia.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\hablar.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\marker.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\paleta-de-pintura.png" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

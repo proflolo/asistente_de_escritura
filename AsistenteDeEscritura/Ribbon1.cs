@@ -33,5 +33,22 @@ namespace AsistenteDeEscritura
         {
             Globals.ThisAddIn.Limpiar();
         }
+
+        private void button4_Click(object sender, RibbonControlEventArgs e)
+        {
+            Globals.ThisAddIn.ResaltarMalsonantes();
+        }
+
+        private void button5_Click(object sender, RibbonControlEventArgs e)
+        {
+            Globals.ThisAddIn.ResaltaDicientes();
+
+        }
+
+        private void button6_Click(object sender, RibbonControlEventArgs e)
+        {
+            Globals.ThisAddIn.ResaltaAdjetivos();
+
+        }
     }
 }

@@ -18,11 +18,13 @@ namespace AsistenteDeEscritura
         Regex m_aguda = new Regex("[aeiouns]$");
         Regex m_dipongo = new Regex("[aeiou]+");
         Regex m_consonante = new Regex("[b-df-hj-np-tv-z]");
+        Regex m_adverbioMente = new Regex("mente$");
+        HashSet<string> m_dicientes = new HashSet<string>(Constantes.k_dicientes);
+        HashSet<string> m_adjetivos = new HashSet<string>(Constantes.k_adjetivos);
         private void ThisAddIn_Startup(object sender, System.EventArgs e)
         {
             m_palabrasResaltadas = new List<Word.Range>();
             this.Application.DocumentBeforeSave += new Word.ApplicationEvents4_DocumentBeforeSaveEventHandler(OnBeforeSave);
-
         }
 
         private void OnBeforeSave(Word.Document Doc, ref bool SaveAsUI, ref bool Cancel)
@@ -163,7 +165,7 @@ namespace AsistenteDeEscritura
         public void ResaltarRitmo()
         {
             Globals.ThisAddIn.Application.UndoRecord.StartCustomRecord("repeticiones");
-
+            LimiparPalabrasResaltadas();
             Word.Range documentRange = Globals.ThisAddIn.Application.ActiveDocument.Range();
             foreach(Word.Range sentence in documentRange.Sentences)
             {
@@ -339,6 +341,50 @@ namespace AsistenteDeEscritura
             }
             Globals.ThisAddIn.Application.UndoRecord.EndCustomRecord();
         }
+
+        public void ResaltarMalsonantes()
+        {
+            Globals.ThisAddIn.Application.UndoRecord.StartCustomRecord("repeticiones");
+            LimiparPalabrasResaltadas();
+            Word.Range documentRange = Globals.ThisAddIn.Application.ActiveDocument.Range();
+            foreach (Word.Range word in documentRange.Words)
+            {
+                string text = word.Text.Trim().ToLower();
+                Match adverbioMente = m_adverbioMente.Match(text);
+                if (adverbioMente != null && adverbioMente.Success)
+                {
+                    FlagRange(word, FlagStrength.Flojo, Word.WdColor.wdColorLavender);
+                }
+            }
+            Globals.ThisAddIn.Application.UndoRecord.EndCustomRecord();
+        }
+
+        private void ResaltaDeLista(HashSet<string> i_list)
+        {
+            Globals.ThisAddIn.Application.UndoRecord.StartCustomRecord("repeticiones");
+            LimiparPalabrasResaltadas();
+            Word.Range documentRange = Globals.ThisAddIn.Application.ActiveDocument.Range();
+            foreach (Word.Range word in documentRange.Words)
+            {
+                string text = word.Text.ToLower().Trim();
+                if(i_list.Contains(text))
+                {
+                    FlagRange(word, FlagStrength.Flojo, Word.WdColor.wdColorLavender);
+                }
+            }
+            Globals.ThisAddIn.Application.UndoRecord.EndCustomRecord();
+        }
+
+        public void ResaltaDicientes()
+        {
+            ResaltaDeLista(m_dicientes);
+        }
+
+        public void ResaltaAdjetivos()
+        {
+            ResaltaDeLista(m_adjetivos);
+        }
+
 
         #region Código generado por VSTO
 
