@@ -17,5 +17,21 @@ namespace AsistenteDeEscritura
         {
             Globals.ThisAddIn.ResaltarRepeticiones();
         }
+
+        private void Malsonante_Click(object sender, RibbonControlEventArgs e)
+        {
+            Globals.ThisAddIn.ResaltarMalsonantes();
+        }
+
+        private void button2_Click(object sender, RibbonControlEventArgs e)
+        {
+            Globals.ThisAddIn.ResaltarRimas();
+        }
+
+        private void button3_Click(object sender, RibbonControlEventArgs e)
+        {
+            Globals.ThisAddIn.Limpiar();
+
+        }
     }
 }
