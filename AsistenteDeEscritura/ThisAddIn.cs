@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
@@ -21,10 +22,36 @@ namespace AsistenteDeEscritura
         Regex m_adverbioMente = new Regex("mente$");
         HashSet<string> m_dicientes = new HashSet<string>(Constantes.k_dicientes);
         HashSet<string> m_adjetivos = new HashSet<string>(Constantes.k_adjetivos);
+        List<string> m_prefijos = new List<string>(Constantes.k_prefijos);
+        List<string> m_sufijos = new List<string>(Constantes.k_sufijos);
+
+        class ComparadorDeMorfemas : IComparer<string>
+        {
+            public int Compare(string x, string y)
+            {
+                if (x.Length > y.Length)
+                {
+                    return -1;
+                }
+                else if (x.Length < y.Length)
+                {
+                    return 1;
+                }
+                else
+                {
+                    CaseInsensitiveComparer comparer = new CaseInsensitiveComparer();
+                    return comparer.Compare(x, y);
+                }
+            }
+        }
+
         private void ThisAddIn_Startup(object sender, System.EventArgs e)
         {
             m_palabrasResaltadas = new List<Word.Range>();
             this.Application.DocumentBeforeSave += new Word.ApplicationEvents4_DocumentBeforeSaveEventHandler(OnBeforeSave);
+            ComparadorDeMorfemas comparador = new ComparadorDeMorfemas();
+            m_prefijos.Sort(comparador);
+            m_sufijos.Sort(comparador);
         }
 
         private void OnBeforeSave(Word.Document Doc, ref bool SaveAsUI, ref bool Cancel)
@@ -385,6 +412,90 @@ namespace AsistenteDeEscritura
         public void ResaltaAdjetivos()
         {
             ResaltaDeLista(m_adjetivos);
+        }
+
+        public void ResaltaLexemasRepetidos()
+        {
+            Word.Range documentRange = Globals.ThisAddIn.Application.ActiveDocument.Range();
+
+            Dictionary<string, List<Word.Range>> wordDictionary = new Dictionary<string, List<Word.Range>>();
+            foreach (Word.Range word in documentRange.Words)
+            {
+                string text = word.Text.ToLower().Trim();
+                if (text.Length > 3)
+                {
+                    string lexema = text;
+                    //Buscamos el lexema de la palabra
+
+                    foreach (string prefijo in m_prefijos)
+                    {
+                        if (lexema.StartsWith(prefijo))
+                        {
+                            lexema = lexema.Substring(prefijo.Length);
+                            break;
+                        }
+                    }
+                    bool changed = false;
+                    do
+                    {
+                        changed = false;
+                        foreach (string sufijo in m_sufijos)
+                        {
+                            if (lexema.EndsWith(sufijo) && lexema.Length > 0)
+                            {
+                                lexema = lexema.Substring(0, lexema.Length - sufijo.Length);
+                                changed = true;
+                                break;
+                            }
+                        }
+                    } while (changed);
+
+                    if (wordDictionary.ContainsKey(lexema))
+                    {
+                        wordDictionary[lexema].Add(word);
+                    }
+                    else
+                    {
+                        List<Word.Range> wordRanges = new List<Word.Range>();
+                        wordRanges.Add(word);
+                        wordDictionary.Add(lexema, wordRanges);
+                    }
+                }
+            }
+            Dictionary<int, Word.Comment> cacheDeComentarios = new Dictionary<int, Word.Comment>();
+            Globals.ThisAddIn.Application.UndoRecord.StartCustomRecord("repeticiones");
+            LimiparPalabrasResaltadas();
+            foreach (var kv in wordDictionary)
+            {
+                string text = kv.Key;
+                Word.Range previousWord = null;
+                foreach (Word.Range word in kv.Value)
+                {
+                    if (previousWord != null)
+                    {
+                        if (word.Start - previousWord.Start < 50)
+                        {
+                            //Repetición cercana!
+                            FlagRange(word, FlagStrength.Fuerte, Word.WdColor.wdColorOrange);
+                            FlagRange(previousWord, FlagStrength.Fuerte, Word.WdColor.wdColorOrange);
+                        }
+                        else if (word.Start - previousWord.Start < 100)
+                        {
+                            //repeticion lejana
+                            FlagRange(word, FlagStrength.Flojo, Word.WdColor.wdColorOrange);
+                            FlagRange(previousWord, FlagStrength.Flojo, Word.WdColor.wdColorOrange);
+                        }
+                        else
+                        {
+                            //No nos afecta
+                        }
+
+                    }
+
+                    previousWord = word;
+                }
+            }
+            Globals.ThisAddIn.Application.UndoRecord.EndCustomRecord();
         }
 
 
