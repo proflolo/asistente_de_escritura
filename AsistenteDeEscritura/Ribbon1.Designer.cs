@@ -41,12 +41,13 @@ namespace AsistenteDeEscritura
             this.separator1 = this.Factory.CreateRibbonSeparator();
             this.button1 = this.Factory.CreateRibbonButton();
             this.Rimas = this.Factory.CreateRibbonButton();
+            this.button7 = this.Factory.CreateRibbonButton();
             this.button4 = this.Factory.CreateRibbonButton();
             this.button5 = this.Factory.CreateRibbonButton();
             this.button6 = this.Factory.CreateRibbonButton();
-            this.button7 = this.Factory.CreateRibbonButton();
             this.button2 = this.Factory.CreateRibbonButton();
             this.button3 = this.Factory.CreateRibbonButton();
+            this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
             this.tab1.SuspendLayout();
             this.group1.SuspendLayout();
             this.SuspendLayout();
@@ -97,10 +98,18 @@ namespace AsistenteDeEscritura
             this.Rimas.ShowImage = true;
             this.Rimas.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.Rimas_Click);
             // 
+            // button7
+            // 
+            this.button7.Image = global::AsistenteDeEscritura.Properties.Resources.megafono;
+            this.button7.Label = "Cacofonía";
+            this.button7.Name = "button7";
+            this.button7.ShowImage = true;
+            this.button7.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.button7_Click);
+            // 
             // button4
             // 
             this.button4.Image = global::AsistenteDeEscritura.Properties.Resources.marker;
-            this.button4.Label = "Malson.";
+            this.button4.Label = "Adv. mente";
             this.button4.Name = "button4";
             this.button4.ShowImage = true;
             this.button4.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.button4_Click);
@@ -121,14 +130,6 @@ namespace AsistenteDeEscritura
             this.button6.ShowImage = true;
             this.button6.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.button6_Click);
             // 
-            // button7
-            // 
-            this.button7.Image = global::AsistenteDeEscritura.Properties.Resources.atom;
-            this.button7.Label = "Lexemas rep.";
-            this.button7.Name = "button7";
-            this.button7.ShowImage = true;
-            this.button7.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.button7_Click);
-            // 
             // button2
             // 
             this.button2.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
@@ -146,6 +147,10 @@ namespace AsistenteDeEscritura
             this.button3.Name = "button3";
             this.button3.ShowImage = true;
             this.button3.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.button3_Click);
+            // 
+            // backgroundWorker1
+            // 
+            this.backgroundWorker1.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker1_DoWork);
             // 
             // Ribbon1
             // 
@@ -175,6 +180,7 @@ namespace AsistenteDeEscritura
         internal Microsoft.Office.Tools.Ribbon.RibbonButton button5;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton button6;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton button7;
+        private System.ComponentModel.BackgroundWorker backgroundWorker1;
     }
 
     partial class ThisRibbonCollection

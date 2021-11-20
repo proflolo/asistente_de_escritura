@@ -18,8 +18,10 @@ namespace AsistenteDeEscritura
         Regex m_acento = new Regex("[áéíóú]");
         Regex m_aguda = new Regex("[aeiouns]$");
         Regex m_dipongo = new Regex("[aeiou]+");
+        Regex m_vocalesDeSilaba = new Regex("(í|ú|[aeiouáéíóú]+)");
         Regex m_consonante = new Regex("[b-df-hj-np-tv-z]");
         Regex m_adverbioMente = new Regex("mente$");
+        Regex m_fonemas = new Regex("ll|rr|pr|pl|br|bl|fr|fl|tr|tl|dr|dl|cr|cl|gr|[b-df-hj-np-tv-z]");
         HashSet<string> m_dicientes = new HashSet<string>(Constantes.k_dicientes);
         HashSet<string> m_adjetivos = new HashSet<string>(Constantes.k_adjetivos);
         List<string> m_prefijos = new List<string>(Constantes.k_prefijos);
@@ -57,7 +59,8 @@ namespace AsistenteDeEscritura
         private void OnBeforeSave(Word.Document Doc, ref bool SaveAsUI, ref bool Cancel)
         {
             this.Application.UndoRecord.StartCustomRecord("repeticiones");
-            LimiparPalabrasResaltadas();
+            Word.Range documentRange = this.Application.ActiveDocument.Range();
+            LimiparPalabrasResaltadas(documentRange);
             this.Application.UndoRecord.EndCustomRecord();
         }
 
@@ -69,12 +72,11 @@ namespace AsistenteDeEscritura
             Fuerte,
             Flojo
         }
-        private void LimiparPalabrasResaltadas()
+        private void LimiparPalabrasResaltadas(Word.Range i_range)
         {
             try
             {
-                Word.Range documentRange = this.Application.ActiveDocument.Range();
-                foreach (Word.Range palabra in documentRange.Words)
+                foreach (Word.Range palabra in i_range.Words)
                 {
                     if (palabra.Font.Underline == Word.WdUnderline.wdUnderlineWavy || palabra.Font.Underline == Word.WdUnderline.wdUnderlineWavyHeavy)
                     {
@@ -135,10 +137,17 @@ namespace AsistenteDeEscritura
 
         public void ResaltarRepeticiones()
         {
-            Word.Range documentRange = Globals.ThisAddIn.Application.ActiveDocument.Range();
+            Word.Range documentRange = GetSelectedRange();
+            Globals.ThisAddIn.Application.UndoRecord.StartCustomRecord("repeticiones");
+            ResaltarRepeticiones(documentRange);
+            Globals.ThisAddIn.Application.UndoRecord.EndCustomRecord();
+        }
+
+        private void ResaltarRepeticiones(Word.Range i_range)
+        {
 
             Dictionary<string, List<Word.Range>> wordDictionary = new Dictionary<string, List<Word.Range>>();
-            foreach(Word.Range word in documentRange.Words)
+            foreach(Word.Range word in i_range.Words)
             {
                 string text = word.Text.ToLower().Trim();
                 if (text.Length > 3)
@@ -155,9 +164,7 @@ namespace AsistenteDeEscritura
                     }
                 }
             }
-            Dictionary<int, Word.Comment> cacheDeComentarios = new Dictionary<int, Word.Comment>();
-            Globals.ThisAddIn.Application.UndoRecord.StartCustomRecord("repeticiones");
-            LimiparPalabrasResaltadas();
+            LimiparPalabrasResaltadas(i_range);
             foreach (var kv in wordDictionary)
             {
                 string text = kv.Key;
@@ -188,15 +195,33 @@ namespace AsistenteDeEscritura
                     previousWord = word;
                 }
             }
-            Globals.ThisAddIn.Application.UndoRecord.EndCustomRecord();
+        }
+
+        Word.Range GetSelectedRange()
+        {
+            Word.Selection selection = this.Application.Selection;
+            if (selection != null && selection.Range != null && selection.Range.Text != null && selection.Range.Text.Length > 0)
+            {
+                return selection.Range;
+            }
+            else
+            {
+                return Globals.ThisAddIn.Application.ActiveDocument.Range();
+            }
         }
 
         public void ResaltarRitmo()
         {
             Globals.ThisAddIn.Application.UndoRecord.StartCustomRecord("repeticiones");
-            LimiparPalabrasResaltadas();
-            Word.Range documentRange = Globals.ThisAddIn.Application.ActiveDocument.Range();
-            foreach(Word.Range sentence in documentRange.Sentences)
+            Word.Range documentRange = GetSelectedRange();
+            ResaltarRitmo(documentRange);
+            Globals.ThisAddIn.Application.UndoRecord.EndCustomRecord();
+        }
+
+        private void ResaltarRitmo(Word.Range i_range)
+        {
+            LimiparPalabrasResaltadas(i_range);
+            foreach(Word.Range sentence in i_range.Sentences)
             {
                 uint ritmo = 0;
                 foreach(Word.Range word in sentence.Words)
@@ -234,7 +259,6 @@ namespace AsistenteDeEscritura
                     FlagRange(word, FlagStrength.Flojo, color);
                 }
             }
-            Globals.ThisAddIn.Application.UndoRecord.EndCustomRecord();
         }
 
         private string ComputeRima(string i_text)
@@ -277,19 +301,25 @@ namespace AsistenteDeEscritura
         public void Limpiar()
         {
             Globals.ThisAddIn.Application.UndoRecord.StartCustomRecord("repeticiones");
-            LimiparPalabrasResaltadas();
+            Word.Range documentRange = this.Application.ActiveDocument.Range();
+            LimiparPalabrasResaltadas(documentRange);
+            Globals.ThisAddIn.Application.UndoRecord.EndCustomRecord();
+        }
+
+        public void ResaltaRimas()
+        {
+            Word.Range documentRange = GetSelectedRange();
+            Globals.ThisAddIn.Application.UndoRecord.StartCustomRecord("repeticiones");
+            ResaltaRimas(documentRange);
             Globals.ThisAddIn.Application.UndoRecord.EndCustomRecord();
         }
 
 
-
-        public void ResaltaRimas()
+        private void ResaltaRimas(Word.Range i_range)
         {
-            Word.Range documentRange = Globals.ThisAddIn.Application.ActiveDocument.Range();
-
             Dictionary<string, List<Word.Range>> rimeConsonanteDictionary = new Dictionary<string, List<Word.Range>>();
             Dictionary<string, List<Word.Range>> rimeAsonanteDictionary = new Dictionary<string, List<Word.Range>>();
-            foreach (Word.Range word in documentRange.Words)
+            foreach (Word.Range word in i_range.Words)
             {
                 string raw = word.Text.ToLower().Trim();
                 string rimaConsonante = ComputeRima(raw);
@@ -319,9 +349,8 @@ namespace AsistenteDeEscritura
                     }
                 }
             }
-            Dictionary<int, Word.Comment> cacheDeComentarios = new Dictionary<int, Word.Comment>();
-            Globals.ThisAddIn.Application.UndoRecord.StartCustomRecord("repeticiones");
-            LimiparPalabrasResaltadas();
+            
+            LimiparPalabrasResaltadas(i_range);
             foreach (var kv in rimeConsonanteDictionary)
             {
                 string text = kv.Key;
@@ -368,15 +397,12 @@ namespace AsistenteDeEscritura
                     previousWord = word;
                 }
             }
-            Globals.ThisAddIn.Application.UndoRecord.EndCustomRecord();
         }
 
-        public void ResaltarMalsonantes()
+        private void ResaltarMalsonantes(Word.Range i_documentRange)
         {
-            Globals.ThisAddIn.Application.UndoRecord.StartCustomRecord("repeticiones");
-            LimiparPalabrasResaltadas();
-            Word.Range documentRange = Globals.ThisAddIn.Application.ActiveDocument.Range();
-            foreach (Word.Range word in documentRange.Words)
+            LimiparPalabrasResaltadas(i_documentRange);
+            foreach (Word.Range word in i_documentRange.Words)
             {
                 string text = word.Text.Trim().ToLower();
                 Match adverbioMente = m_adverbioMente.Match(text);
@@ -385,15 +411,19 @@ namespace AsistenteDeEscritura
                     FlagRange(word, FlagStrength.Flojo, Word.WdColor.wdColorLavender);
                 }
             }
+        }
+
+        public void ResaltarMalsonantes()
+        {
+            Word.Range documentRange = GetSelectedRange();
+            ResaltarMalsonantes(documentRange);
             Globals.ThisAddIn.Application.UndoRecord.EndCustomRecord();
         }
 
-        private void ResaltaDeLista(HashSet<string> i_list)
+        private void ResaltaDeLista(Word.Range i_documentRange, HashSet<string> i_list)
         {
-            Globals.ThisAddIn.Application.UndoRecord.StartCustomRecord("repeticiones");
-            LimiparPalabrasResaltadas();
-            Word.Range documentRange = Globals.ThisAddIn.Application.ActiveDocument.Range();
-            foreach (Word.Range word in documentRange.Words)
+            LimiparPalabrasResaltadas(i_documentRange);
+            foreach (Word.Range word in i_documentRange.Words)
             {
                 string text = word.Text.ToLower().Trim();
                 if(i_list.Contains(text))
@@ -401,89 +431,144 @@ namespace AsistenteDeEscritura
                     FlagRange(word, FlagStrength.Flojo, Word.WdColor.wdColorLavender);
                 }
             }
-            Globals.ThisAddIn.Application.UndoRecord.EndCustomRecord();
         }
 
         public void ResaltaDicientes()
         {
-            ResaltaDeLista(m_dicientes);
+            Globals.ThisAddIn.Application.UndoRecord.StartCustomRecord("repeticiones");
+            Word.Range documentRange = GetSelectedRange();
+            ResaltaDeLista(documentRange, m_dicientes);
+            Globals.ThisAddIn.Application.UndoRecord.EndCustomRecord();
         }
 
         public void ResaltaAdjetivos()
         {
-            ResaltaDeLista(m_adjetivos);
+            Globals.ThisAddIn.Application.UndoRecord.StartCustomRecord("repeticiones");
+            Word.Range documentRange = GetSelectedRange();
+            ResaltaDeLista(documentRange, m_adjetivos);
+            Globals.ThisAddIn.Application.UndoRecord.EndCustomRecord();
+
         }
 
-        public void ResaltaLexemasRepetidos()
+        List<string> SeparaSilabas(string i_palabra)
         {
-            Word.Range documentRange = Globals.ThisAddIn.Application.ActiveDocument.Range();
-
-            Dictionary<string, List<Word.Range>> wordDictionary = new Dictionary<string, List<Word.Range>>();
-            foreach (Word.Range word in documentRange.Words)
+            MatchCollection matches = m_vocalesDeSilaba.Matches(i_palabra);
+            if(matches.Count <= 1)
             {
-                string text = word.Text.ToLower().Trim();
-                if (text.Length > 3)
+                return new List<string>() { i_palabra };
+            }
+
+            List<string> silabas = new List<string>();
+            string silaba = null;
+            Match lastMatch = null;
+            foreach (Match match in matches)
+            {
+                if(silaba == null)
                 {
-                    string lexema = text;
-                    //Buscamos el lexema de la palabra
-
-                    foreach (string prefijo in m_prefijos)
+                    silaba = i_palabra.Substring(0, match.Index + match.Length);
+                }
+                else
+                {
+                    int lastEnd = lastMatch.Index + lastMatch.Length;
+                    string entreDiptongos = i_palabra.Substring(lastEnd, match.Index - (lastMatch.Index + lastMatch.Length));
+                    MatchCollection fonemas = m_fonemas.Matches(entreDiptongos);
+                    int rightFonemas = Math.Max(1, fonemas.Count / 2);
+                    if (fonemas.Count > 0)
                     {
-                        if (lexema.StartsWith(prefijo))
-                        {
-                            lexema = lexema.Substring(prefijo.Length);
-                            break;
-                        }
-                    }
-                    bool changed = false;
-                    do
-                    {
-                        changed = false;
-                        foreach (string sufijo in m_sufijos)
-                        {
-                            if (lexema.EndsWith(sufijo) && lexema.Length > 0)
-                            {
-                                lexema = lexema.Substring(0, lexema.Length - sufijo.Length);
-                                changed = true;
-                                break;
-                            }
-                        }
-                    } while (changed);
-
-                    if (wordDictionary.ContainsKey(lexema))
-                    {
-                        wordDictionary[lexema].Add(word);
+                        int splitPoint = lastEnd + fonemas[fonemas.Count - (rightFonemas)].Index;
+                        string izquierda = i_palabra.Substring(lastEnd, splitPoint - lastEnd);
+                        string derecha = i_palabra.Substring(splitPoint, match.Index - splitPoint);
+                        silaba += izquierda;
+                        silabas.Add(silaba);
+                        silaba = derecha + i_palabra.Substring(match.Index, match.Length);
                     }
                     else
                     {
-                        List<Word.Range> wordRanges = new List<Word.Range>();
-                        wordRanges.Add(word);
-                        wordDictionary.Add(lexema, wordRanges);
+                        silabas.Add(silaba);
+                        silaba = i_palabra.Substring(match.Index, match.Length);
                     }
                 }
+
+                lastMatch = match;
             }
-            Dictionary<int, Word.Comment> cacheDeComentarios = new Dictionary<int, Word.Comment>();
-            Globals.ThisAddIn.Application.UndoRecord.StartCustomRecord("repeticiones");
-            LimiparPalabrasResaltadas();
-            foreach (var kv in wordDictionary)
+
+            if(silaba != null)
+            {
+                silabas.Add(silaba + i_palabra.Substring(lastMatch.Index + lastMatch.Length));
+            }
+
+            return silabas;
+        }
+
+        struct SilabaInfo
+        {
+            public Word.Range word;
+            public int start;
+            public int palabraIdx;
+        };
+
+        static Regex s_replace_a_Accents = new Regex("[á|à|ä|â]", RegexOptions.Compiled);
+        static Regex s_replace_e_Accents = new Regex("[é|è|ë|ê]", RegexOptions.Compiled);
+        static Regex s_replace_i_Accents = new Regex("[í|ì|ï|î]", RegexOptions.Compiled);
+        static Regex s_replace_o_Accents = new Regex("[ó|ò|ö|ô]", RegexOptions.Compiled);
+        static Regex s_replace_u_Accents = new Regex("[ú|ù|ü|û]", RegexOptions.Compiled);
+        public static string RemoveAccents(string inputString)
+        {
+            inputString = s_replace_a_Accents.Replace(inputString, "a");
+            inputString = s_replace_e_Accents.Replace(inputString, "e");
+            inputString = s_replace_i_Accents.Replace(inputString, "i");
+            inputString = s_replace_o_Accents.Replace(inputString, "o");
+            inputString = s_replace_u_Accents.Replace(inputString, "u");
+            return inputString;
+        }
+
+        public void ResaltaCacofonia(Word.Range i_documentRange)
+        {
+            long t1 = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
+            Dictionary<string, List<SilabaInfo>> silabaDictionary = new Dictionary<string, List<SilabaInfo>>();
+            int idx = 0;
+            foreach (Word.Range word in i_documentRange.Words)
+            {
+                int silabaPosition = 0;
+                string text = RemoveAccents(word.Text.ToLower().Trim());
+                List<string> silabas = SeparaSilabas(text);
+                foreach (string silaba in silabas)
+                {
+                    SilabaInfo info = new SilabaInfo();
+                    info.word = word;
+                    info.start = word.Start + silabaPosition;
+                    info.palabraIdx = idx;
+                    if (silabaDictionary.ContainsKey(silaba))
+                    {
+                        silabaDictionary[silaba].Add(info);
+                    }
+                    else
+                    {
+                        List<SilabaInfo> list = new List<SilabaInfo>();
+                        list.Add(info);
+                        silabaDictionary.Add(silaba, list);
+                    }
+                    silabaPosition += silaba.Length;
+                }
+                idx++;
+            }
+            long t2 = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
+
+            //Agujero pelotero refresco aflojar calle cerro atlántico hambre inspector obstaculizar construcción instrucción malestar juan compadre casa pedro Tómate un té para que te alivies. – Toma un té, sentirás alivio. Tú que estuviste allí ¿viste lo que sucedió? – ¿Presenciaste lo que allí sucedió ? Ella me preguntó que qué estaba haciendo. – Ella me preguntó qué estaba haciendo. Colócalo donde coloqué los libros de cocina. – Colócalo donde están los libros de cocina. Las ballenas me llenan de alegría. – Las ballenas me dan alegría.
+            LimiparPalabrasResaltadas(i_documentRange);
+            foreach (var kv in silabaDictionary)
             {
                 string text = kv.Key;
-                Word.Range previousWord = null;
-                foreach (Word.Range word in kv.Value)
+                SilabaInfo? previousSilaba = null;
+                foreach (SilabaInfo info in kv.Value)
                 {
-                    if (previousWord != null)
+                    if (previousSilaba != null)
                     {
-                        if (word.Start - previousWord.Start < 50)
+                        if (info.start - previousSilaba.Value.start < 14 && info.palabraIdx != previousSilaba.Value.palabraIdx)
                         {
                             //Repetición cercana!
-                            FlagRange(word, FlagStrength.Fuerte, Word.WdColor.wdColorOrange);
-                            FlagRange(previousWord, FlagStrength.Fuerte, Word.WdColor.wdColorOrange);
-                        }
-                        else if (word.Start - previousWord.Start < 100)
-                        {
-                            //repeticion lejana
-                            FlagRange(word, FlagStrength.Flojo, Word.WdColor.wdColorOrange);
-                            FlagRange(previousWord, FlagStrength.Flojo, Word.WdColor.wdColorOrange);
+                            FlagRange(info.word, FlagStrength.Flojo, Word.WdColor.wdColorOrange);
+                            FlagRange(previousSilaba.Value.word, FlagStrength.Flojo, Word.WdColor.wdColorOrange);
                         }
                         else
                         {
@@ -492,9 +577,19 @@ namespace AsistenteDeEscritura
 
                     }
 
-                    previousWord = word;
+                    previousSilaba = info;
                 }
             }
+
+            long t3 = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
+            long p1 = t2 - t1;
+            long p2 = t3 - t2;
+        }
+        public void ResaltaCacofonia()
+        {
+            Globals.ThisAddIn.Application.UndoRecord.StartCustomRecord("repeticiones");
+            Word.Range documentRange = GetSelectedRange();
+            ResaltaCacofonia(documentRange);
             Globals.ThisAddIn.Application.UndoRecord.EndCustomRecord();
         }
 

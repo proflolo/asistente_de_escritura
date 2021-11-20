@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 namespace AsistenteDeEscritura
 {
@@ -25,7 +26,8 @@ namespace AsistenteDeEscritura
 
         private void Rimas_Click(object sender, RibbonControlEventArgs e)
         {
-            Globals.ThisAddIn.ResaltaRimas();
+            //Globals.ThisAddIn.ResaltaRimas();
+            this.backgroundWorker1.RunWorkerAsync();
 
         }
 
@@ -53,7 +55,12 @@ namespace AsistenteDeEscritura
 
         private void button7_Click(object sender, RibbonControlEventArgs e)
         {
-            Globals.ThisAddIn.ResaltaLexemasRepetidos();
+            Globals.ThisAddIn.ResaltaCacofonia();
+        }
+
+        private void backgroundWorker1_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
+        {
+            Globals.ThisAddIn.ResaltaCacofonia();
         }
     }
 }

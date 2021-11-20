@@ -103,6 +103,16 @@ namespace AsistenteDeEscritura.Properties {
         /// <summary>
         ///   Busca un recurso adaptado de tipo System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap megafono {
+            get {
+                object obj = ResourceManager.GetObject("megafono", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Busca un recurso adaptado de tipo System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap paleta_de_pintura {
             get {
                 object obj = ResourceManager.GetObject("paleta-de-pintura", resourceCulture);
