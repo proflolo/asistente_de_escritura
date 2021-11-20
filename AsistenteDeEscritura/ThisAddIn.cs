@@ -8,6 +8,7 @@ using Word = Microsoft.Office.Interop.Word;
 using Office = Microsoft.Office.Core;
 using Microsoft.Office.Tools.Word;
 using System.Text.RegularExpressions;
+using System.ComponentModel;
 
 namespace AsistenteDeEscritura
 {
@@ -99,22 +100,29 @@ namespace AsistenteDeEscritura
 
         private void FlagRange(Word.Range i_range, FlagStrength i_fuerza, Word.WdColor i_color)
         {
-            string commentTex = "";
-            if(i_fuerza == FlagStrength.Fuerte)
+            try
             {
-                i_range.Font.Underline = Word.WdUnderline.wdUnderlineWavyHeavy;
-                commentTex = "Repetición(Cercana): " + i_range.Text;
-            }
-            else
-            {
-                if(i_range.Font.Underline != Word.WdUnderline.wdUnderlineWavyHeavy)
+                if (i_fuerza == FlagStrength.Fuerte)
                 {
-                    i_range.Font.Underline = Word.WdUnderline.wdUnderlineWavy;
-                    commentTex = "Repetición(Lejana): " + i_range.Text;
+                    i_range.Font.Underline = Word.WdUnderline.wdUnderlineWavyHeavy;
                 }
+                else
+                {
+                    if (i_range.Font.Underline != Word.WdUnderline.wdUnderlineWavyHeavy)
+                    {
+                        i_range.Font.Underline = Word.WdUnderline.wdUnderlineWavy;
+                    }
+                }
+                //
+                i_range.Font.UnderlineColor = i_color;
+
+                
             }
-            //
-            i_range.Font.UnderlineColor =i_color;
+            catch (Exception e)
+            {
+                int i = 0;
+                i++;
+            }
             //Word.Comment existingComment = null;
             //if(io_commentCache.ContainsKey(i_range.Start))
             //{
@@ -149,6 +157,8 @@ namespace AsistenteDeEscritura
             Dictionary<string, List<Word.Range>> wordDictionary = new Dictionary<string, List<Word.Range>>();
             foreach(Word.Range word in i_range.Words)
             {
+                double x = Convert.ToDouble(word.get_Information(Word.WdInformation.wdHorizontalPositionRelativeToPage));
+                double y = Convert.ToDouble(word.get_Information(Word.WdInformation.wdVerticalPositionRelativeToPage));
                 string text = word.Text.ToLower().Trim();
                 if (text.Length > 3)
                 {

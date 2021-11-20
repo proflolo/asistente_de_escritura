@@ -37,17 +37,16 @@ namespace AsistenteDeEscritura
         {
             this.tab1 = this.Factory.CreateRibbonTab();
             this.group1 = this.Factory.CreateRibbonGroup();
-            this.separator2 = this.Factory.CreateRibbonSeparator();
-            this.separator1 = this.Factory.CreateRibbonSeparator();
             this.button1 = this.Factory.CreateRibbonButton();
             this.Rimas = this.Factory.CreateRibbonButton();
             this.button7 = this.Factory.CreateRibbonButton();
             this.button4 = this.Factory.CreateRibbonButton();
             this.button5 = this.Factory.CreateRibbonButton();
             this.button6 = this.Factory.CreateRibbonButton();
+            this.separator2 = this.Factory.CreateRibbonSeparator();
             this.button2 = this.Factory.CreateRibbonButton();
+            this.separator1 = this.Factory.CreateRibbonSeparator();
             this.button3 = this.Factory.CreateRibbonButton();
-            this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
             this.tab1.SuspendLayout();
             this.group1.SuspendLayout();
             this.SuspendLayout();
@@ -73,14 +72,6 @@ namespace AsistenteDeEscritura
             this.group1.Items.Add(this.button3);
             this.group1.Label = "Asistente de Escritura";
             this.group1.Name = "group1";
-            // 
-            // separator2
-            // 
-            this.separator2.Name = "separator2";
-            // 
-            // separator1
-            // 
-            this.separator1.Name = "separator1";
             // 
             // button1
             // 
@@ -130,6 +121,10 @@ namespace AsistenteDeEscritura
             this.button6.ShowImage = true;
             this.button6.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.button6_Click);
             // 
+            // separator2
+            // 
+            this.separator2.Name = "separator2";
+            // 
             // button2
             // 
             this.button2.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
@@ -139,6 +134,10 @@ namespace AsistenteDeEscritura
             this.button2.ShowImage = true;
             this.button2.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.button2_Click);
             // 
+            // separator1
+            // 
+            this.separator1.Name = "separator1";
+            // 
             // button3
             // 
             this.button3.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
@@ -147,10 +146,6 @@ namespace AsistenteDeEscritura
             this.button3.Name = "button3";
             this.button3.ShowImage = true;
             this.button3.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.button3_Click);
-            // 
-            // backgroundWorker1
-            // 
-            this.backgroundWorker1.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker1_DoWork);
             // 
             // Ribbon1
             // 
@@ -180,7 +175,6 @@ namespace AsistenteDeEscritura
         internal Microsoft.Office.Tools.Ribbon.RibbonButton button5;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton button6;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton button7;
-        private System.ComponentModel.BackgroundWorker backgroundWorker1;
     }
 
     partial class ThisRibbonCollection

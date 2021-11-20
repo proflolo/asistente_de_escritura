@@ -31,4 +31,7 @@
 *.out
 *.app
 /AsistenteDeEscritura/obj
-/AsistenteDeEscritura/bin/Debug/*.pdb
+/AsistenteDeEscritura/bin/*
+/AsistenteDeEscritura/publish/*
+*.suo
+*.user

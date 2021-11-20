@@ -1,5 +1,6 @@
 ﻿using Microsoft.Office.Tools.Ribbon;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -26,9 +27,7 @@ namespace AsistenteDeEscritura
 
         private void Rimas_Click(object sender, RibbonControlEventArgs e)
         {
-            //Globals.ThisAddIn.ResaltaRimas();
-            this.backgroundWorker1.RunWorkerAsync();
-
+            Globals.ThisAddIn.ResaltaRimas();
         }
 
         private void button3_Click(object sender, RibbonControlEventArgs e)
