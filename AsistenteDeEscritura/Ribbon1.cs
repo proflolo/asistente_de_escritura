@@ -61,5 +61,10 @@ namespace AsistenteDeEscritura
         {
             Globals.ThisAddIn.ResaltaCacofonia();
         }
+
+        private void frases_Click(object sender, RibbonControlEventArgs e)
+        {
+            Globals.ThisAddIn.ResaltaFrasesLargas();
+        }
     }
 }

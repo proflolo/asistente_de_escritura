@@ -44,6 +44,7 @@ namespace AsistenteDeEscritura
             this.button5 = this.Factory.CreateRibbonButton();
             this.button6 = this.Factory.CreateRibbonButton();
             this.separator2 = this.Factory.CreateRibbonSeparator();
+            this.frases = this.Factory.CreateRibbonButton();
             this.button2 = this.Factory.CreateRibbonButton();
             this.separator1 = this.Factory.CreateRibbonSeparator();
             this.button3 = this.Factory.CreateRibbonButton();
@@ -67,6 +68,7 @@ namespace AsistenteDeEscritura
             this.group1.Items.Add(this.button5);
             this.group1.Items.Add(this.button6);
             this.group1.Items.Add(this.separator2);
+            this.group1.Items.Add(this.frases);
             this.group1.Items.Add(this.button2);
             this.group1.Items.Add(this.separator1);
             this.group1.Items.Add(this.button3);
@@ -125,9 +127,16 @@ namespace AsistenteDeEscritura
             // 
             this.separator2.Name = "separator2";
             // 
+            // frases
+            // 
+            this.frases.Image = global::AsistenteDeEscritura.Properties.Resources.ruler;
+            this.frases.Label = "Frases Largas";
+            this.frases.Name = "frases";
+            this.frases.ShowImage = true;
+            this.frases.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.frases_Click);
+            // 
             // button2
             // 
-            this.button2.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
             this.button2.Image = global::AsistenteDeEscritura.Properties.Resources.partitura;
             this.button2.Label = "Ritmo";
             this.button2.Name = "button2";
@@ -175,6 +184,7 @@ namespace AsistenteDeEscritura
         internal Microsoft.Office.Tools.Ribbon.RibbonButton button5;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton button6;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton button7;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton frases;
     }
 
     partial class ThisRibbonCollection
