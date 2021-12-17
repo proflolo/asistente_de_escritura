@@ -38,7 +38,13 @@ namespace AsistenteDeEscritura
             this.tab1 = this.Factory.CreateRibbonTab();
             this.group1 = this.Factory.CreateRibbonGroup();
             this.button1 = this.Factory.CreateRibbonButton();
-            this.Malsonante = this.Factory.CreateRibbonButton();
+            this.Rimas = this.Factory.CreateRibbonButton();
+            this.button7 = this.Factory.CreateRibbonButton();
+            this.button4 = this.Factory.CreateRibbonButton();
+            this.button5 = this.Factory.CreateRibbonButton();
+            this.button6 = this.Factory.CreateRibbonButton();
+            this.separator2 = this.Factory.CreateRibbonSeparator();
+            this.frases = this.Factory.CreateRibbonButton();
             this.button2 = this.Factory.CreateRibbonButton();
             this.separator1 = this.Factory.CreateRibbonSeparator();
             this.button3 = this.Factory.CreateRibbonButton();
@@ -56,7 +62,13 @@ namespace AsistenteDeEscritura
             // group1
             // 
             this.group1.Items.Add(this.button1);
-            this.group1.Items.Add(this.Malsonante);
+            this.group1.Items.Add(this.Rimas);
+            this.group1.Items.Add(this.button7);
+            this.group1.Items.Add(this.button4);
+            this.group1.Items.Add(this.button5);
+            this.group1.Items.Add(this.button6);
+            this.group1.Items.Add(this.separator2);
+            this.group1.Items.Add(this.frases);
             this.group1.Items.Add(this.button2);
             this.group1.Items.Add(this.separator1);
             this.group1.Items.Add(this.button3);
@@ -65,27 +77,68 @@ namespace AsistenteDeEscritura
             // 
             // button1
             // 
-            this.button1.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
             this.button1.Image = global::AsistenteDeEscritura.Properties.Resources.writing2;
-            this.button1.Label = "Repes";
+            this.button1.Label = "Repeticiones";
             this.button1.Name = "button1";
             this.button1.ShowImage = true;
             this.button1.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.button1_Click);
             // 
-            // Malsonante
+            // Rimas
             // 
-            this.Malsonante.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.Malsonante.Image = global::AsistenteDeEscritura.Properties.Resources.marker;
-            this.Malsonante.Label = "Malsonante";
-            this.Malsonante.Name = "Malsonante";
-            this.Malsonante.ShowImage = true;
-            this.Malsonante.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.Malsonante_Click);
+            this.Rimas.Image = global::AsistenteDeEscritura.Properties.Resources.poesia;
+            this.Rimas.Label = "Rimas";
+            this.Rimas.Name = "Rimas";
+            this.Rimas.ShowImage = true;
+            this.Rimas.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.Rimas_Click);
+            // 
+            // button7
+            // 
+            this.button7.Image = global::AsistenteDeEscritura.Properties.Resources.megafono;
+            this.button7.Label = "Cacofonía";
+            this.button7.Name = "button7";
+            this.button7.ShowImage = true;
+            this.button7.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.button7_Click);
+            // 
+            // button4
+            // 
+            this.button4.Image = global::AsistenteDeEscritura.Properties.Resources.marker;
+            this.button4.Label = "Adv. mente";
+            this.button4.Name = "button4";
+            this.button4.ShowImage = true;
+            this.button4.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.button4_Click);
+            // 
+            // button5
+            // 
+            this.button5.Image = global::AsistenteDeEscritura.Properties.Resources.hablar;
+            this.button5.Label = "Dicientes";
+            this.button5.Name = "button5";
+            this.button5.ShowImage = true;
+            this.button5.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.button5_Click);
+            // 
+            // button6
+            // 
+            this.button6.Image = global::AsistenteDeEscritura.Properties.Resources.paleta_de_pintura;
+            this.button6.Label = "Adjetivos";
+            this.button6.Name = "button6";
+            this.button6.ShowImage = true;
+            this.button6.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.button6_Click);
+            // 
+            // separator2
+            // 
+            this.separator2.Name = "separator2";
+            // 
+            // frases
+            // 
+            this.frases.Image = global::AsistenteDeEscritura.Properties.Resources.ruler;
+            this.frases.Label = "Frases Largas";
+            this.frases.Name = "frases";
+            this.frases.ShowImage = true;
+            this.frases.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.frases_Click);
             // 
             // button2
             // 
-            this.button2.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.button2.Image = global::AsistenteDeEscritura.Properties.Resources.poesia;
-            this.button2.Label = "Rimas";
+            this.button2.Image = global::AsistenteDeEscritura.Properties.Resources.partitura;
+            this.button2.Label = "Ritmo";
             this.button2.Name = "button2";
             this.button2.ShowImage = true;
             this.button2.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.button2_Click);
@@ -96,6 +149,7 @@ namespace AsistenteDeEscritura
             // 
             // button3
             // 
+            this.button3.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
             this.button3.Image = global::AsistenteDeEscritura.Properties.Resources.eraser;
             this.button3.Label = "Limpiar";
             this.button3.Name = "button3";
@@ -121,10 +175,16 @@ namespace AsistenteDeEscritura
         internal Microsoft.Office.Tools.Ribbon.RibbonTab tab1;
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup group1;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton button1;
-        internal Microsoft.Office.Tools.Ribbon.RibbonButton Malsonante;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton button2;
-        internal Microsoft.Office.Tools.Ribbon.RibbonSeparator separator1;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton Rimas;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton button3;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton button4;
+        internal Microsoft.Office.Tools.Ribbon.RibbonSeparator separator1;
+        internal Microsoft.Office.Tools.Ribbon.RibbonSeparator separator2;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton button5;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton button6;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton button7;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton frases;
     }
 
     partial class ThisRibbonCollection
