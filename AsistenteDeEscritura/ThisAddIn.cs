@@ -22,6 +22,7 @@ namespace AsistenteDeEscritura
         Regex m_vocalesDeSilaba = new Regex("(í|ú|[aeiouáéíóú]+)");
         Regex m_consonante = new Regex("[b-df-hj-np-tv-z]");
         Regex m_adverbioMente = new Regex("mente$");
+        Regex m_gerundio = new Regex("ndo(me|te|le|nos|s|les|se)?(lo|la|los|las)?$");
         Regex m_fonemas = new Regex("ll|rr|pr|pl|br|bl|fr|fl|tr|tl|dr|dl|cr|cl|gr|[b-df-hj-np-tv-z]");
         HashSet<string> m_dicientes = new HashSet<string>(Constantes.k_dicientes);
         HashSet<string> m_adjetivos = new HashSet<string>(Constantes.k_adjetivos);
@@ -403,24 +404,160 @@ namespace AsistenteDeEscritura
             }
         }
 
-        private void ResaltarMalsonantes(Word.Range i_documentRange)
+        private void ResaltarAdvMente(Word.Range i_documentRange)
         {
             LimiparPalabrasResaltadas(i_documentRange);
             foreach (Word.Range word in i_documentRange.Words)
             {
                 string text = word.Text.Trim().ToLower();
-                Match adverbioMente = m_adverbioMente.Match(text);
-                if (adverbioMente != null && adverbioMente.Success)
+                if (text.Length > 5)
                 {
-                    FlagRange(word, FlagStrength.Flojo);
+                    Match adverbioMente = m_adverbioMente.Match(text);
+                    if (adverbioMente != null && adverbioMente.Success)
+                    {
+                        FlagRange(word, FlagStrength.Flojo);
+                    }
                 }
             }
         }
 
-        public void ResaltarMalsonantes()
+        private void ResaltarGerundios(Word.Range i_documentRange)
+        {
+            LimiparPalabrasResaltadas(i_documentRange);
+            foreach (Word.Range word in i_documentRange.Words)
+            {
+                string text = word.Text.Trim().ToLower();
+                if (text.Length > 5)
+                {
+                    Match gerundio = m_gerundio.Match(text);
+                    if (gerundio != null && gerundio.Success)
+                    {
+                        FlagRange(word, FlagStrength.Flojo);
+                    }
+                }
+            }
+        }
+
+        public void ResaltarAdvMente()
         {
             Word.Range documentRange = GetSelectedRange();
-            ResaltarMalsonantes(documentRange);
+            Globals.ThisAddIn.Application.UndoRecord.StartCustomRecord("repeticiones");
+            ResaltarAdvMente(documentRange);
+            Globals.ThisAddIn.Application.UndoRecord.EndCustomRecord();
+        }
+
+        public void ResaltarGerundios()
+        {
+            Word.Range documentRange = GetSelectedRange();
+            Globals.ThisAddIn.Application.UndoRecord.StartCustomRecord("repeticiones");
+            ResaltarGerundios(documentRange);
+            Globals.ThisAddIn.Application.UndoRecord.EndCustomRecord();
+        }
+
+        private void CorregirGuiones(Word.Range i_documentRange)
+        {
+            LimiparPalabrasResaltadas(i_documentRange);
+            const string k_guion = "—";
+            foreach (Word.Paragraph paragraph in i_documentRange.Paragraphs)
+            {
+                //string text = paragraph.Range.Text.Trim().ToLower();
+                //int i = 0;
+                //++i;
+                bool isDialog = false;
+
+                foreach(Word.Range word in paragraph.Range.Words)
+                {
+                    string text = word.Text.Trim().ToLower();
+                    if(text.StartsWith("—"))
+                    {
+                        isDialog = true;
+                        break;
+                    }
+                    else if (text.Length > 0)
+                    {
+                        isDialog = false;
+                        break;
+                    }
+                }
+
+                if (isDialog)
+                {
+                    uint guionCount = 0;
+                    bool estoyEndialogo = false;
+                    Word.Range previousWord = null;
+                    Word.Range previous2Word = null;
+                    bool rightAfterNarrativeGuion = false;
+                    foreach (Word.Range word in paragraph.Range.Words)
+                    {
+                        string rawText = word.Text;
+                        string text = rawText.Trim().ToLower();
+
+                        if(rightAfterNarrativeGuion)
+                        {
+                            string previous2Text = previous2Word.Text.Trim().ToLower();
+                            bool endsInPunto = previous2Text.EndsWith(".");
+                            bool endsInSigno = previous2Text.EndsWith("?") || previous2Text.EndsWith("!");
+                            if(m_dicientes.Contains(text))
+                            {
+                                if(endsInPunto)
+                                {
+                                    //Error, los dicientes no pueden tener un punto al final del dialogo
+                                    FlagRange(previousWord, FlagStrength.Flojo);
+                                }
+                            }
+                            else
+                            {
+                                if(!endsInPunto && !endsInSigno)
+                                {
+                                    //Error, es No diciente y no termina en punto
+                                    FlagRange(previousWord, FlagStrength.Flojo);
+                                }
+                            }
+                        }
+                        rightAfterNarrativeGuion = false;
+
+                        bool isGuion = text.IndexOf(k_guion) != -1;
+                        if (isGuion)
+                        {
+                            if (estoyEndialogo)
+                            {
+                                string lastText = previousWord.Text;
+                                rightAfterNarrativeGuion = true;
+                                if (!lastText.EndsWith(" "))
+                                {
+                                    //Error, falta espacio.
+                                    FlagRange(word, FlagStrength.Fuerte);
+                                }   
+                            }
+                            else
+                            {
+                                if (guionCount != 0)
+                                {
+                                    bool endsInPunto = text.EndsWith(".");
+                                    if (!endsInPunto)
+                                    {
+                                        //Punto tras cerrar la acotacion narrativa
+                                        FlagRange(word, FlagStrength.Fuerte);
+                                    }
+                                }
+                            }
+                            guionCount++;
+                            estoyEndialogo = !estoyEndialogo;
+                            
+                        }
+                       
+                        previous2Word = previousWord;
+                        previousWord = word;
+                    }
+                }
+            }
+        }
+
+        public void CorregirGuiones()
+        {
+            Word.Range documentRange = GetSelectedRange();
+            Globals.ThisAddIn.Application.UndoRecord.StartCustomRecord("repeticiones");
+            CorregirGuiones(documentRange);
             Globals.ThisAddIn.Application.UndoRecord.EndCustomRecord();
         }
 

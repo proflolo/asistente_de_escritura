@@ -37,7 +37,7 @@ namespace AsistenteDeEscritura
 
         private void button4_Click(object sender, RibbonControlEventArgs e)
         {
-            Globals.ThisAddIn.ResaltarMalsonantes();
+            Globals.ThisAddIn.ResaltarAdvMente();
         }
 
         private void button5_Click(object sender, RibbonControlEventArgs e)
@@ -65,6 +65,17 @@ namespace AsistenteDeEscritura
         private void frases_Click(object sender, RibbonControlEventArgs e)
         {
             Globals.ThisAddIn.ResaltaFrasesLargas();
+        }
+
+        private void Gerundios_Click(object sender, RibbonControlEventArgs e)
+        {
+            Globals.ThisAddIn.ResaltarGerundios();
+        }
+
+        private void Guiones_Click(object sender, RibbonControlEventArgs e)
+        {
+            Globals.ThisAddIn.CorregirGuiones();
+
         }
     }
 }

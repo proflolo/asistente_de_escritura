@@ -37,16 +37,20 @@ namespace AsistenteDeEscritura
         {
             this.tab1 = this.Factory.CreateRibbonTab();
             this.group1 = this.Factory.CreateRibbonGroup();
+            this.separator3 = this.Factory.CreateRibbonSeparator();
+            this.separator2 = this.Factory.CreateRibbonSeparator();
+            this.separator1 = this.Factory.CreateRibbonSeparator();
+            this.separator4 = this.Factory.CreateRibbonSeparator();
             this.button1 = this.Factory.CreateRibbonButton();
             this.Rimas = this.Factory.CreateRibbonButton();
             this.button7 = this.Factory.CreateRibbonButton();
             this.button4 = this.Factory.CreateRibbonButton();
             this.button5 = this.Factory.CreateRibbonButton();
             this.button6 = this.Factory.CreateRibbonButton();
-            this.separator2 = this.Factory.CreateRibbonSeparator();
+            this.Gerundios = this.Factory.CreateRibbonButton();
             this.frases = this.Factory.CreateRibbonButton();
             this.button2 = this.Factory.CreateRibbonButton();
-            this.separator1 = this.Factory.CreateRibbonSeparator();
+            this.Guiones = this.Factory.CreateRibbonButton();
             this.button3 = this.Factory.CreateRibbonButton();
             this.tab1.SuspendLayout();
             this.group1.SuspendLayout();
@@ -64,16 +68,36 @@ namespace AsistenteDeEscritura
             this.group1.Items.Add(this.button1);
             this.group1.Items.Add(this.Rimas);
             this.group1.Items.Add(this.button7);
+            this.group1.Items.Add(this.separator3);
             this.group1.Items.Add(this.button4);
             this.group1.Items.Add(this.button5);
             this.group1.Items.Add(this.button6);
+            this.group1.Items.Add(this.Gerundios);
             this.group1.Items.Add(this.separator2);
             this.group1.Items.Add(this.frases);
             this.group1.Items.Add(this.button2);
             this.group1.Items.Add(this.separator1);
+            this.group1.Items.Add(this.Guiones);
+            this.group1.Items.Add(this.separator4);
             this.group1.Items.Add(this.button3);
             this.group1.Label = "Asistente de Escritura";
             this.group1.Name = "group1";
+            // 
+            // separator3
+            // 
+            this.separator3.Name = "separator3";
+            // 
+            // separator2
+            // 
+            this.separator2.Name = "separator2";
+            // 
+            // separator1
+            // 
+            this.separator1.Name = "separator1";
+            // 
+            // separator4
+            // 
+            this.separator4.Name = "separator4";
             // 
             // button1
             // 
@@ -123,9 +147,13 @@ namespace AsistenteDeEscritura
             this.button6.ShowImage = true;
             this.button6.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.button6_Click);
             // 
-            // separator2
+            // Gerundios
             // 
-            this.separator2.Name = "separator2";
+            this.Gerundios.Image = global::AsistenteDeEscritura.Properties.Resources._263883;
+            this.Gerundios.Label = "Gerundios";
+            this.Gerundios.Name = "Gerundios";
+            this.Gerundios.ShowImage = true;
+            this.Gerundios.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.Gerundios_Click);
             // 
             // frases
             // 
@@ -143,9 +171,13 @@ namespace AsistenteDeEscritura
             this.button2.ShowImage = true;
             this.button2.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.button2_Click);
             // 
-            // separator1
+            // Guiones
             // 
-            this.separator1.Name = "separator1";
+            this.Guiones.Image = global::AsistenteDeEscritura.Properties.Resources.conversation_icon;
+            this.Guiones.Label = "Guiones";
+            this.Guiones.Name = "Guiones";
+            this.Guiones.ShowImage = true;
+            this.Guiones.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.Guiones_Click);
             // 
             // button3
             // 
@@ -185,6 +217,10 @@ namespace AsistenteDeEscritura
         internal Microsoft.Office.Tools.Ribbon.RibbonButton button6;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton button7;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton frases;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton Gerundios;
+        internal Microsoft.Office.Tools.Ribbon.RibbonSeparator separator3;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton Guiones;
+        internal Microsoft.Office.Tools.Ribbon.RibbonSeparator separator4;
     }
 
     partial class ThisRibbonCollection
