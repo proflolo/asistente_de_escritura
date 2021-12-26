@@ -30,6 +30,7 @@ namespace AsistenteDeEscritura
         List<string> m_sufijos = new List<string>(Constantes.k_sufijos);
         Word.WdColor k_flojoColor = Word.WdColor.wdColorOrange;
         Word.WdColor k_fuerteColor = Word.WdColor.wdColorPlum;
+        static int k_limiparTotal = 100;
         class ComparadorDeMorfemas : IComparer<string>
         {
             public int Compare(string x, string y)
@@ -75,22 +76,36 @@ namespace AsistenteDeEscritura
             Fuerte,
             Flojo
         }
-        private void LimiparPalabrasResaltadas(Word.Range i_range)
+
+        enum LimpiarResult
+        {
+            ContinueProcessing,
+            Quit
+        }
+        private LimpiarResult LimiparPalabrasResaltadas(Word.Range i_range, ProgressDisplay i_progress)
         {
             try
             {
+                int numLimpiadas = 0;
+                int total = i_range.Words.Count;
                 foreach (Word.Range palabra in i_range.Words)
                 {
                     if (palabra.Font.Underline == Word.WdUnderline.wdUnderlineWavy || palabra.Font.Underline == Word.WdUnderline.wdUnderlineWavyHeavy)
                     {
                         palabra.Font.Underline = Word.WdUnderline.wdUnderlineNone;
                     }
+                    numLimpiadas++;
+                    if(i_progress.UpdateProgress((numLimpiadas * k_limiparTotal) / (total)) == ProgressDisplay.UpdateResult.Quit)
+                    {
+                        return LimpiarResult.Quit;
+                    }
                 }
             }
             catch (System.Exception e)
             {
-
+                return LimpiarResult.Quit;
             }
+            return LimpiarResult.ContinueProcessing;
         }
 
         private void FlagRange(Word.Range i_range, FlagStrength i_fuerza)
@@ -149,8 +164,11 @@ namespace AsistenteDeEscritura
 
         private void ResaltarRepeticiones(Word.Range i_range)
         {
-
+            const int k_repeticionesTotal = 100;
+            ProgressDisplay progressUpdater = new ProgressDisplay(k_limiparTotal + i_range.Words.Count + k_repeticionesTotal);
+            LimiparPalabrasResaltadas(i_range, progressUpdater);
             Dictionary<string, List<Word.Range>> wordDictionary = new Dictionary<string, List<Word.Range>>();
+            int i = 0;
             foreach(Word.Range word in i_range.Words)
             {
                 
@@ -168,8 +186,14 @@ namespace AsistenteDeEscritura
                         wordDictionary.Add(text, wordRanges);
                     }
                 }
+                if (progressUpdater.UpdateProgress(k_limiparTotal + i) == ProgressDisplay.UpdateResult.Quit)
+                {
+                    progressUpdater.Finish();
+                    return;
+                }
+                i++;
             }
-            LimiparPalabrasResaltadas(i_range);
+            int j = 0;
             foreach (var kv in wordDictionary)
             {
                 string text = kv.Key;
@@ -199,7 +223,14 @@ namespace AsistenteDeEscritura
 
                     previousWord = word;
                 }
+                if (progressUpdater.UpdateProgress(k_limiparTotal + i_range.Words.Count + j * k_repeticionesTotal / wordDictionary.Count) == ProgressDisplay.UpdateResult.Quit)
+                {
+                    progressUpdater.Finish();
+                    return;
+                }
+                j++;
             }
+            progressUpdater.Finish();
         }
 
         Word.Range GetSelectedRange()
@@ -225,7 +256,9 @@ namespace AsistenteDeEscritura
 
         private void ResaltarRitmo(Word.Range i_range)
         {
-            LimiparPalabrasResaltadas(i_range);
+            ProgressDisplay progressUpdater = new ProgressDisplay(k_limiparTotal + i_range.Sentences.Count);
+            LimiparPalabrasResaltadas(i_range, progressUpdater);
+            int sentenceIdx = 0;
             foreach(Word.Range sentence in i_range.Sentences)
             {
                 uint ritmo = 0;
@@ -263,7 +296,14 @@ namespace AsistenteDeEscritura
                 {
                     FlagRangewithColor(word, color);
                 }
+                if(progressUpdater.UpdateProgress(k_limiparTotal + sentenceIdx) == ProgressDisplay.UpdateResult.Quit)
+                {
+                    progressUpdater.Finish();
+                    return;
+                }
+                sentenceIdx++;
             }
+            progressUpdater.Finish();
         }
 
         private string ComputeRima(string i_text)
@@ -307,7 +347,9 @@ namespace AsistenteDeEscritura
         {
             Globals.ThisAddIn.Application.UndoRecord.StartCustomRecord("repeticiones");
             Word.Range documentRange = this.Application.ActiveDocument.Range();
-            LimiparPalabrasResaltadas(documentRange);
+            ProgressDisplay progressUpdater = new ProgressDisplay(k_limiparTotal);
+            LimiparPalabrasResaltadas(documentRange, progressUpdater);
+            progressUpdater.Finish();
             Globals.ThisAddIn.Application.UndoRecord.EndCustomRecord();
         }
 
@@ -322,8 +364,12 @@ namespace AsistenteDeEscritura
 
         private void ResaltaRimas(Word.Range i_range)
         {
+            const int k_rimasTotal = 100;
+            ProgressDisplay progressUpdater = new ProgressDisplay(k_limiparTotal + i_range.Words.Count + k_rimasTotal * 2);
+            LimiparPalabrasResaltadas(i_range, progressUpdater);
             Dictionary<string, List<Word.Range>> rimeConsonanteDictionary = new Dictionary<string, List<Word.Range>>();
             Dictionary<string, List<Word.Range>> rimeAsonanteDictionary = new Dictionary<string, List<Word.Range>>();
+            int i = 0;
             foreach (Word.Range word in i_range.Words)
             {
                 string raw = word.Text.ToLower().Trim();
@@ -353,9 +399,14 @@ namespace AsistenteDeEscritura
                         rimeAsonanteDictionary.Add(rimaAsonante, wordRanges);
                     }
                 }
+                if (progressUpdater.UpdateProgress(k_limiparTotal + i) == ProgressDisplay.UpdateResult.Quit)
+                {
+                    progressUpdater.Finish();
+                    return;
+                }
             }
-            
-            LimiparPalabrasResaltadas(i_range);
+
+            int j = 0;
             foreach (var kv in rimeConsonanteDictionary)
             {
                 string text = kv.Key;
@@ -378,7 +429,15 @@ namespace AsistenteDeEscritura
                     }
                     previousWord = word;
                 }
+                if (progressUpdater.UpdateProgress(k_limiparTotal + i_range.Words.Count + (j * k_rimasTotal) / rimeConsonanteDictionary.Count) == ProgressDisplay.UpdateResult.Quit)
+                {
+                    progressUpdater.Finish();
+                    return;
+                }
+                j++;
             }
+
+            j = 0;
             foreach (var kv in rimeAsonanteDictionary)
             {
                 string text = kv.Key;
@@ -401,12 +460,21 @@ namespace AsistenteDeEscritura
                     }
                     previousWord = word;
                 }
+                if (progressUpdater.UpdateProgress(k_limiparTotal + i_range.Words.Count + k_rimasTotal + (j * k_rimasTotal) / rimeConsonanteDictionary.Count) == ProgressDisplay.UpdateResult.Quit)
+                {
+                    progressUpdater.Finish();
+                    return;
+                }
+                j++;
             }
+            progressUpdater.Finish();
         }
 
         private void ResaltarAdvMente(Word.Range i_documentRange)
         {
-            LimiparPalabrasResaltadas(i_documentRange);
+            ProgressDisplay progressUpdater = new ProgressDisplay(k_limiparTotal + i_documentRange.Words.Count);
+            LimiparPalabrasResaltadas(i_documentRange, progressUpdater);
+            int i = 0;
             foreach (Word.Range word in i_documentRange.Words)
             {
                 string text = word.Text.Trim().ToLower();
@@ -418,12 +486,21 @@ namespace AsistenteDeEscritura
                         FlagRange(word, FlagStrength.Flojo);
                     }
                 }
+                i++;
+                if(progressUpdater.UpdateProgress(k_limiparTotal + i) == ProgressDisplay.UpdateResult.Quit)
+                {
+                    progressUpdater.Finish();
+                    return;
+                }
             }
+            progressUpdater.Finish();
         }
 
         private void ResaltarGerundios(Word.Range i_documentRange)
         {
-            LimiparPalabrasResaltadas(i_documentRange);
+            ProgressDisplay progressUpdater = new ProgressDisplay(k_limiparTotal + i_documentRange.Words.Count);
+            LimiparPalabrasResaltadas(i_documentRange, progressUpdater);
+            int i = 0;
             foreach (Word.Range word in i_documentRange.Words)
             {
                 string text = word.Text.Trim().ToLower();
@@ -435,7 +512,15 @@ namespace AsistenteDeEscritura
                         FlagRange(word, FlagStrength.Flojo);
                     }
                 }
+
+                if (progressUpdater.UpdateProgress(k_limiparTotal + i) == ProgressDisplay.UpdateResult.Quit)
+                {
+                    progressUpdater.Finish();
+                    return;
+                }
+                i++;
             }
+            progressUpdater.Finish();
         }
 
         public void ResaltarAdvMente()
@@ -456,8 +541,10 @@ namespace AsistenteDeEscritura
 
         private void CorregirGuiones(Word.Range i_documentRange)
         {
-            LimiparPalabrasResaltadas(i_documentRange);
+            ProgressDisplay progressUpdater = new ProgressDisplay(k_limiparTotal + i_documentRange.Words.Count);
+            LimiparPalabrasResaltadas(i_documentRange, progressUpdater);
             const string k_guion = "—";
+            int processed = 0;
             foreach (Word.Paragraph paragraph in i_documentRange.Paragraphs)
             {
                 //string text = paragraph.Range.Text.Trim().ToLower();
@@ -487,6 +574,7 @@ namespace AsistenteDeEscritura
                     Word.Range previousWord = null;
                     Word.Range previous2Word = null;
                     bool rightAfterNarrativeGuion = false;
+                    int i = 0;
                     foreach (Word.Range word in paragraph.Range.Words)
                     {
                         string rawText = word.Text;
@@ -548,9 +636,16 @@ namespace AsistenteDeEscritura
                        
                         previous2Word = previousWord;
                         previousWord = word;
+                        if (progressUpdater.UpdateProgress(k_limiparTotal + i + processed) == ProgressDisplay.UpdateResult.Quit)
+                        {
+                            progressUpdater.Finish();
+                            return;
+                        }
                     }
                 }
+                processed += paragraph.Range.Words.Count;
             }
+            progressUpdater.Finish();
         }
 
         public void CorregirGuiones()
@@ -563,7 +658,9 @@ namespace AsistenteDeEscritura
 
         private void ResaltaDeLista(Word.Range i_documentRange, HashSet<string> i_list)
         {
-            LimiparPalabrasResaltadas(i_documentRange);
+            ProgressDisplay progressUpdater = new ProgressDisplay(k_limiparTotal + i_documentRange.Words.Count);
+            LimiparPalabrasResaltadas(i_documentRange, progressUpdater);
+            int i = 0;
             foreach (Word.Range word in i_documentRange.Words)
             {
                 string text = word.Text.ToLower().Trim();
@@ -571,7 +668,15 @@ namespace AsistenteDeEscritura
                 {
                     FlagRange(word, FlagStrength.Flojo);
                 }
+
+                if (progressUpdater.UpdateProgress(k_limiparTotal + i) == ProgressDisplay.UpdateResult.Quit)
+                {
+                    progressUpdater.Finish();
+                    return;
+                }
+                i++;
             }
+            progressUpdater.Finish();
         }
 
         public void ResaltaDicientes()
@@ -665,6 +770,9 @@ namespace AsistenteDeEscritura
 
         public void ResaltaCacofonia(Word.Range i_documentRange)
         {
+            const int k_silabaTotal = 100;
+            ProgressDisplay progressUpdater = new ProgressDisplay(k_limiparTotal + i_documentRange.Words.Count + k_silabaTotal);
+            LimiparPalabrasResaltadas(i_documentRange, progressUpdater);
             long t1 = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
             Dictionary<string, List<SilabaInfo>> silabaDictionary = new Dictionary<string, List<SilabaInfo>>();
             int idx = 0;
@@ -692,11 +800,15 @@ namespace AsistenteDeEscritura
                     silabaPosition += silaba.Length;
                 }
                 idx++;
+                if (progressUpdater.UpdateProgress(k_limiparTotal + idx) == ProgressDisplay.UpdateResult.Quit)
+                {
+                    progressUpdater.Finish();
+                    return;
+                }
             }
             long t2 = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
 
-            //Agujero pelotero refresco aflojar calle cerro atlántico hambre inspector obstaculizar construcción instrucción malestar juan compadre casa pedro Tómate un té para que te alivies. – Toma un té, sentirás alivio. Tú que estuviste allí ¿viste lo que sucedió? – ¿Presenciaste lo que allí sucedió ? Ella me preguntó que qué estaba haciendo. – Ella me preguntó qué estaba haciendo. Colócalo donde coloqué los libros de cocina. – Colócalo donde están los libros de cocina. Las ballenas me llenan de alegría. – Las ballenas me dan alegría.
-            LimiparPalabrasResaltadas(i_documentRange);
+            int i = 0;
             foreach (var kv in silabaDictionary)
             {
                 string text = kv.Key;
@@ -720,11 +832,15 @@ namespace AsistenteDeEscritura
 
                     previousSilaba = info;
                 }
+                if (progressUpdater.UpdateProgress(k_limiparTotal + i_documentRange.Words.Count + (i * k_silabaTotal) / silabaDictionary.Count) == ProgressDisplay.UpdateResult.Quit)
+                {
+                    progressUpdater.Finish();
+                    return;
+                }
+                i++;
             }
 
-            long t3 = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
-            long p1 = t2 - t1;
-            long p2 = t3 - t2;
+            progressUpdater.Finish();
         }
         public void ResaltaCacofonia()
         {
@@ -736,11 +852,13 @@ namespace AsistenteDeEscritura
 
         public void ResaltaFrasesLargas(Word.Range i_documentRange)
         {
-            LimiparPalabrasResaltadas(i_documentRange);
+            ProgressDisplay progressUpdater = new ProgressDisplay(k_limiparTotal + i_documentRange.Sentences.Count);
+            LimiparPalabrasResaltadas(i_documentRange, progressUpdater);
 
             Dictionary<string, List<SilabaInfo>> silabaDictionary = new Dictionary<string, List<SilabaInfo>>();
             int longSentenceSize = 30;
             int shortSentenceSize = 20;
+            int i = 0;
             foreach (Word.Range sentence in i_documentRange.Sentences)
             {
                 if(sentence.Words.Count > longSentenceSize)
@@ -758,7 +876,14 @@ namespace AsistenteDeEscritura
                         FlagRange(word, FlagStrength.Flojo);
                     }
                 }
+                if (progressUpdater.UpdateProgress(k_limiparTotal + i) == ProgressDisplay.UpdateResult.Quit)
+                {
+                    progressUpdater.Finish();
+                    return;
+                }
+                i++;
             }
+            progressUpdater.Finish();
         }
 
         public void ResaltaFrasesLargas()

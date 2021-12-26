@@ -37,20 +37,20 @@ namespace AsistenteDeEscritura
         {
             this.tab1 = this.Factory.CreateRibbonTab();
             this.group1 = this.Factory.CreateRibbonGroup();
-            this.separator3 = this.Factory.CreateRibbonSeparator();
-            this.separator2 = this.Factory.CreateRibbonSeparator();
-            this.separator1 = this.Factory.CreateRibbonSeparator();
-            this.separator4 = this.Factory.CreateRibbonSeparator();
             this.button1 = this.Factory.CreateRibbonButton();
             this.Rimas = this.Factory.CreateRibbonButton();
             this.button7 = this.Factory.CreateRibbonButton();
+            this.separator3 = this.Factory.CreateRibbonSeparator();
             this.button4 = this.Factory.CreateRibbonButton();
             this.button5 = this.Factory.CreateRibbonButton();
             this.button6 = this.Factory.CreateRibbonButton();
             this.Gerundios = this.Factory.CreateRibbonButton();
+            this.separator2 = this.Factory.CreateRibbonSeparator();
             this.frases = this.Factory.CreateRibbonButton();
             this.button2 = this.Factory.CreateRibbonButton();
+            this.separator1 = this.Factory.CreateRibbonSeparator();
             this.Guiones = this.Factory.CreateRibbonButton();
+            this.separator4 = this.Factory.CreateRibbonSeparator();
             this.button3 = this.Factory.CreateRibbonButton();
             this.tab1.SuspendLayout();
             this.group1.SuspendLayout();
@@ -83,22 +83,6 @@ namespace AsistenteDeEscritura
             this.group1.Label = "Asistente de Escritura";
             this.group1.Name = "group1";
             // 
-            // separator3
-            // 
-            this.separator3.Name = "separator3";
-            // 
-            // separator2
-            // 
-            this.separator2.Name = "separator2";
-            // 
-            // separator1
-            // 
-            this.separator1.Name = "separator1";
-            // 
-            // separator4
-            // 
-            this.separator4.Name = "separator4";
-            // 
             // button1
             // 
             this.button1.Image = global::AsistenteDeEscritura.Properties.Resources.writing2;
@@ -122,6 +106,10 @@ namespace AsistenteDeEscritura
             this.button7.Name = "button7";
             this.button7.ShowImage = true;
             this.button7.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.button7_Click);
+            // 
+            // separator3
+            // 
+            this.separator3.Name = "separator3";
             // 
             // button4
             // 
@@ -155,6 +143,10 @@ namespace AsistenteDeEscritura
             this.Gerundios.ShowImage = true;
             this.Gerundios.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.Gerundios_Click);
             // 
+            // separator2
+            // 
+            this.separator2.Name = "separator2";
+            // 
             // frases
             // 
             this.frases.Image = global::AsistenteDeEscritura.Properties.Resources.ruler;
@@ -171,6 +163,10 @@ namespace AsistenteDeEscritura
             this.button2.ShowImage = true;
             this.button2.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.button2_Click);
             // 
+            // separator1
+            // 
+            this.separator1.Name = "separator1";
+            // 
             // Guiones
             // 
             this.Guiones.Image = global::AsistenteDeEscritura.Properties.Resources.conversation_icon;
@@ -178,6 +174,10 @@ namespace AsistenteDeEscritura
             this.Guiones.Name = "Guiones";
             this.Guiones.ShowImage = true;
             this.Guiones.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.Guiones_Click);
+            // 
+            // separator4
+            // 
+            this.separator4.Name = "separator4";
             // 
             // button3
             // 
