@@ -17,7 +17,7 @@ namespace AsistenteDeEscritura
 
         private void button1_Click(object sender, RibbonControlEventArgs e)
         {
-            Globals.ThisAddIn.ResaltarRepeticiones();
+            Globals.ThisAddIn.ResaltarRepeticionesLexemas();
         }
 
         private void button2_Click(object sender, RibbonControlEventArgs e)
@@ -76,6 +76,16 @@ namespace AsistenteDeEscritura
         {
             Globals.ThisAddIn.CorregirGuiones();
 
+        }
+
+        private void RarasButton_Click(object sender, RibbonControlEventArgs e)
+        {
+            Globals.ThisAddIn.ResaltarRaras();
+        }
+
+        private void estadisticasButton_Click(object sender, RibbonControlEventArgs e)
+        {
+            Globals.ThisAddIn.MuestraEstadisticas(estadisticasButton.Checked, () => { estadisticasButton.Checked = false;});
         }
     }
 }

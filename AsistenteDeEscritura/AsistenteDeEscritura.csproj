@@ -33,7 +33,7 @@
     <PublishUrl>publish\</PublishUrl>
     <InstallUrl />
     <TargetCulture>es</TargetCulture>
-    <ApplicationVersion>1.2.0.2</ApplicationVersion>
+    <ApplicationVersion>1.2.0.3</ApplicationVersion>
     <AutoIncrementApplicationRevision>true</AutoIncrementApplicationRevision>
     <UpdateEnabled>true</UpdateEnabled>
     <UpdateInterval>7</UpdateInterval>
@@ -179,6 +179,7 @@
     can be found.
   -->
   <ItemGroup>
+    <Compile Include="Lexemer.cs" />
     <Compile Include="ProgressDisplay.cs" />
     <Compile Include="Constantes.cs" />
     <Compile Include="Form1.cs">
@@ -206,6 +207,9 @@
     <EmbeddedResource Include="Ribbon1.resx">
       <DependentUpon>Ribbon1.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="StatsPanel.resx">
+      <DependentUpon>StatsPanel.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="AsistenteDeEscritura_TemporaryKey.pfx" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -220,6 +224,12 @@
     </Compile>
     <Compile Include="Ribbon1.Designer.cs">
       <DependentUpon>Ribbon1.cs</DependentUpon>
+    </Compile>
+    <Compile Include="StatsPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="StatsPanel.Designer.cs">
+      <DependentUpon>StatsPanel.cs</DependentUpon>
     </Compile>
     <Compile Include="ThisAddIn.cs">
       <SubType>Code</SubType>
@@ -270,6 +280,18 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\conversation-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\diamond.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\estadisticas.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\lupa.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\refresh+.png" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

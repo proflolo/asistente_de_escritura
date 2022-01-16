@@ -24,10 +24,12 @@ namespace AsistenteDeEscritura
         Regex m_adverbioMente = new Regex("mente$");
         Regex m_gerundio = new Regex("ndo(me|te|le|nos|s|les|se)?(lo|la|los|las)?$");
         Regex m_fonemas = new Regex("ll|rr|pr|pl|br|bl|fr|fl|tr|tl|dr|dl|cr|cl|gr|[b-df-hj-np-tv-z]");
+        Regex m_alfaNumerico = new Regex("^[a-zA-Z0-9_]*$");
         HashSet<string> m_dicientes = new HashSet<string>(Constantes.k_dicientes);
         HashSet<string> m_adjetivos = new HashSet<string>(Constantes.k_adjetivos);
         List<string> m_prefijos = new List<string>(Constantes.k_prefijos);
         List<string> m_sufijos = new List<string>(Constantes.k_sufijos);
+        HashSet<string> m_comunes = new HashSet<string>();
         Word.WdColor k_flojoColor = Word.WdColor.wdColorOrange;
         Word.WdColor k_fuerteColor = Word.WdColor.wdColorPlum;
         static int k_limiparTotal = 100;
@@ -51,6 +53,9 @@ namespace AsistenteDeEscritura
             }
         }
 
+        private StatsPanel m_statsWidget;
+        private Microsoft.Office.Tools.CustomTaskPane m_statsPane;
+
         private void ThisAddIn_Startup(object sender, System.EventArgs e)
         {
             m_palabrasResaltadas = new List<Word.Range>();
@@ -58,6 +63,25 @@ namespace AsistenteDeEscritura
             ComparadorDeMorfemas comparador = new ComparadorDeMorfemas();
             m_prefijos.Sort(comparador);
             m_sufijos.Sort(comparador);
+
+            Lexemer lexemer = new Lexemer();
+
+            foreach(string palabraComun in Constantes.k_comunes)
+            {
+                if (!palabraComun.Contains(" "))
+                {
+                    string lexemaComun = lexemer.ComputeLexema(palabraComun);
+                    m_comunes.Add(palabraComun);
+                    m_comunes.Add(lexemaComun);
+                }
+            }
+
+            //Create an instance of the user control
+            m_statsWidget = new StatsPanel();
+            // Connect the user control and the custom task pane 
+            m_statsPane = CustomTaskPanes.Add(m_statsWidget, "Estadísticas");
+            m_statsPane.VisibleChanged += (object _sender, EventArgs _e) => { OnPanelVisibilityChanged(); };
+            m_statsPane.Visible = false;
         }
 
         private void OnBeforeSave(Word.Document Doc, ref bool SaveAsUI, ref bool Cancel)
@@ -90,7 +114,7 @@ namespace AsistenteDeEscritura
                 int total = i_range.Words.Count;
                 foreach (Word.Range palabra in i_range.Words)
                 {
-                    if (palabra.Font.Underline == Word.WdUnderline.wdUnderlineWavy || palabra.Font.Underline == Word.WdUnderline.wdUnderlineWavyHeavy)
+                    if (palabra.Font.Underline == Word.WdUnderline.wdUnderlineWavyHeavy)
                     {
                         palabra.Font.Underline = Word.WdUnderline.wdUnderlineNone;
                     }
@@ -121,7 +145,7 @@ namespace AsistenteDeEscritura
                 {
                     if (i_range.Font.Underline != Word.WdUnderline.wdUnderlineWavyHeavy)
                     {
-                        i_range.Font.Underline = Word.WdUnderline.wdUnderlineWavy;
+                        i_range.Font.Underline = Word.WdUnderline.wdUnderlineWavyHeavy;
                         i_range.Font.UnderlineColor = k_flojoColor;
                     }
                 }
@@ -142,7 +166,7 @@ namespace AsistenteDeEscritura
         {
             try
             {
-                i_range.Font.Underline = Word.WdUnderline.wdUnderlineWavy;
+                i_range.Font.Underline = Word.WdUnderline.wdUnderlineWavyHeavy;
                 i_range.Font.UnderlineColor = i_color;
             }
             catch (Exception e)
@@ -201,6 +225,86 @@ namespace AsistenteDeEscritura
                 foreach(Word.Range word in kv.Value)
                 {
                     if(previousWord != null)
+                    {
+                        if (word.Start - previousWord.Start < 50)
+                        {
+                            //Repetición cercana!
+                            FlagRange(word, FlagStrength.Fuerte);
+                            FlagRange(previousWord, FlagStrength.Fuerte);
+                        }
+                        else if (word.Start - previousWord.Start < 100)
+                        {
+                            //repeticion lejana
+                            FlagRange(word, FlagStrength.Flojo);
+                            FlagRange(previousWord, FlagStrength.Flojo);
+                        }
+                        else
+                        {
+                            //No nos afecta
+                        }
+
+                    }
+
+                    previousWord = word;
+                }
+                if (progressUpdater.UpdateProgress(k_limiparTotal + i_range.Words.Count + j * k_repeticionesTotal / wordDictionary.Count) == ProgressDisplay.UpdateResult.Quit)
+                {
+                    progressUpdater.Finish();
+                    return;
+                }
+                j++;
+            }
+            progressUpdater.Finish();
+        }
+
+        public void ResaltarRepeticionesLexemas()
+        {
+            Word.Range documentRange = GetSelectedRange();
+            Globals.ThisAddIn.Application.UndoRecord.StartCustomRecord("repeticiones");
+            ResaltarRepeticionesLexemas(documentRange);
+            Globals.ThisAddIn.Application.UndoRecord.EndCustomRecord();
+        }
+
+        private void ResaltarRepeticionesLexemas(Word.Range i_range)
+        {
+            Lexemer lexemer = new Lexemer();
+            const int k_repeticionesTotal = 100;
+            ProgressDisplay progressUpdater = new ProgressDisplay(k_limiparTotal + i_range.Words.Count + k_repeticionesTotal);
+            LimiparPalabrasResaltadas(i_range, progressUpdater);
+            Dictionary<string, List<Word.Range>> wordDictionary = new Dictionary<string, List<Word.Range>>();
+            int i = 0;
+            foreach (Word.Range word in i_range.Words)
+            {
+
+                string lex = lexemer.ComputeLexema(word.Text);
+                if (word.Text.Length > 3)
+                {
+                    if (wordDictionary.ContainsKey(lex))
+                    {
+                        wordDictionary[lex].Add(word);
+                    }
+                    else
+                    {
+                        List<Word.Range> wordRanges = new List<Word.Range>();
+                        wordRanges.Add(word);
+                        wordDictionary.Add(lex, wordRanges);
+                    }
+                }
+                if (progressUpdater.UpdateProgress(k_limiparTotal + i) == ProgressDisplay.UpdateResult.Quit)
+                {
+                    progressUpdater.Finish();
+                    return;
+                }
+                i++;
+            }
+            int j = 0;
+            foreach (var kv in wordDictionary)
+            {
+                string text = kv.Key;
+                Word.Range previousWord = null;
+                foreach (Word.Range word in kv.Value)
+                {
+                    if (previousWord != null)
                     {
                         if (word.Start - previousWord.Start < 50)
                         {
@@ -648,12 +752,79 @@ namespace AsistenteDeEscritura
             progressUpdater.Finish();
         }
 
-        public void CorregirGuiones()
+
+            public void CorregirGuiones()
         {
             Word.Range documentRange = GetSelectedRange();
             Globals.ThisAddIn.Application.UndoRecord.StartCustomRecord("repeticiones");
             CorregirGuiones(documentRange);
             Globals.ThisAddIn.Application.UndoRecord.EndCustomRecord();
+        }
+        private void ResaltarRaras(Word.Range i_documentRange)
+        {
+
+        }
+
+        public void ResaltarRaras()
+        {
+            Word.Range documentRange = GetSelectedRange();
+            Globals.ThisAddIn.Application.UndoRecord.StartCustomRecord("repeticiones");
+            ResaltarRaras(documentRange);
+            Globals.ThisAddIn.Application.UndoRecord.EndCustomRecord();
+        }
+
+        public class WordInfo
+        {
+            public WordInfo(string i_word, bool i_rare)
+            {
+                words = new HashSet<string>();
+                words.Add(i_word);
+                usage = 1;
+                isRare = i_rare;
+                referenceWord = i_word;
+            }
+            public void Increment(string i_word)
+            {
+                usage++;
+                words.Add(i_word);
+                if(i_word.Length < referenceWord.Length)
+                {
+                    referenceWord = i_word;
+                }
+            }
+
+            public uint usage;
+            public string referenceWord;
+            public HashSet<string> words;
+            public bool isRare;
+        }
+
+        public Dictionary<string, WordInfo> ComputeWordUsage()
+        {
+            Dictionary<string, WordInfo> result = new Dictionary<string, WordInfo>();
+            Lexemer lexemer = new Lexemer();
+
+            Word.Range documentRange = GetSelectedRange();
+            foreach(Word.Range word in documentRange.Words)
+            {
+                string text = word.Text.ToLower().Trim();
+                Match match = m_alfaNumerico.Match(text);
+                if (match != null && match.Success && text.Length > 0)
+                {
+                    string lex = lexemer.ComputeLexema(text);
+                    if (result.ContainsKey(lex))
+                    {
+                        result[lex].Increment(text);
+                    }
+                    else
+                    {
+                        bool isRara = !m_comunes.Contains(lex) && !m_comunes.Contains(text);
+                        result.Add(lex, new WordInfo(text, isRara));
+                    }
+                }
+            }
+
+            return result;
         }
 
         private void ResaltaDeLista(Word.Range i_documentRange, HashSet<string> i_list)
@@ -780,24 +951,28 @@ namespace AsistenteDeEscritura
             {
                 int silabaPosition = 0;
                 string text = RemoveAccents(word.Text.ToLower().Trim());
-                List<string> silabas = SeparaSilabas(text);
-                foreach (string silaba in silabas)
+                Match match = m_alfaNumerico.Match(text);
+                if (match != null && match.Success)
                 {
-                    SilabaInfo info = new SilabaInfo();
-                    info.word = word;
-                    info.start = word.Start + silabaPosition;
-                    info.palabraIdx = idx;
-                    if (silabaDictionary.ContainsKey(silaba))
+                    List<string> silabas = SeparaSilabas(text);
+                    foreach (string silaba in silabas)
                     {
-                        silabaDictionary[silaba].Add(info);
+                        SilabaInfo info = new SilabaInfo();
+                        info.word = word;
+                        info.start = word.Start + silabaPosition;
+                        info.palabraIdx = idx;
+                        if (silabaDictionary.ContainsKey(silaba))
+                        {
+                            silabaDictionary[silaba].Add(info);
+                        }
+                        else
+                        {
+                            List<SilabaInfo> list = new List<SilabaInfo>();
+                            list.Add(info);
+                            silabaDictionary.Add(silaba, list);
+                        }
+                        silabaPosition += silaba.Length;
                     }
-                    else
-                    {
-                        List<SilabaInfo> list = new List<SilabaInfo>();
-                        list.Add(info);
-                        silabaDictionary.Add(silaba, list);
-                    }
-                    silabaPosition += silaba.Length;
                 }
                 idx++;
                 if (progressUpdater.UpdateProgress(k_limiparTotal + idx) == ProgressDisplay.UpdateResult.Quit)
@@ -856,8 +1031,8 @@ namespace AsistenteDeEscritura
             LimiparPalabrasResaltadas(i_documentRange, progressUpdater);
 
             Dictionary<string, List<SilabaInfo>> silabaDictionary = new Dictionary<string, List<SilabaInfo>>();
-            int longSentenceSize = 30;
-            int shortSentenceSize = 20;
+            int longSentenceSize = 40;
+            int shortSentenceSize = 30;
             int i = 0;
             foreach (Word.Range sentence in i_documentRange.Sentences)
             {
@@ -894,6 +1069,25 @@ namespace AsistenteDeEscritura
             Globals.ThisAddIn.Application.UndoRecord.EndCustomRecord();
         }
 
+        public delegate void OnStatsClosed();
+        bool m_visibilityChangeRequestedByUser = false;
+        OnStatsClosed m_panelClosedCallback;
+        public void MuestraEstadisticas(bool i_visible, OnStatsClosed i_callback)
+        {
+            m_panelClosedCallback = i_callback;
+            m_visibilityChangeRequestedByUser = true;
+            m_statsPane.Visible = i_visible;
+            m_statsWidget.ActualizaEstaisticas();
+            m_visibilityChangeRequestedByUser = false;
+        }
+
+        public void OnPanelVisibilityChanged()
+        {
+            if(!m_visibilityChangeRequestedByUser)
+            {
+                m_panelClosedCallback();
+            }
+        }
 
         #region Código generado por VSTO
 
@@ -909,4 +1103,5 @@ namespace AsistenteDeEscritura
         
         #endregion
     }
+
 }
