@@ -10,6 +10,9 @@ using Microsoft.Office.Tools.Word;
 using System.Text.RegularExpressions;
 using System.ComponentModel;
 
+[DllImport("user32.dll")]
+static extern bool EnableWindow(IntPtr hWnd, bool bEnable);
+
 namespace AsistenteDeEscritura
 {
     public partial class ThisAddIn
@@ -136,22 +139,40 @@ namespace AsistenteDeEscritura
         {
             try
             {
-                if (i_fuerza == FlagStrength.Fuerte)
-                {
-                    i_range.Font.Underline = Word.WdUnderline.wdUnderlineWavyHeavy;
-                    i_range.Font.UnderlineColor = k_fuerteColor;
-                }
-                else
-                {
-                    if (i_range.Font.Underline != Word.WdUnderline.wdUnderlineWavyHeavy)
-                    {
-                        i_range.Font.Underline = Word.WdUnderline.wdUnderlineWavyHeavy;
-                        i_range.Font.UnderlineColor = k_flojoColor;
-                    }
-                }
-                //
+                //if (i_fuerza == FlagStrength.Fuerte)
+                //{
+                //    i_range.Font.Underline = Word.WdUnderline.wdUnderlineWavyHeavy;
+                //    i_range.Font.UnderlineColor = k_fuerteColor;
+                //}
+                //else
+                //{
+                //    if (i_range.Font.Underline != Word.WdUnderline.wdUnderlineWavyHeavy)
+                //    {
+                //        i_range.Font.Underline = Word.WdUnderline.wdUnderlineWavyHeavy;
+                //        i_range.Font.UnderlineColor = k_flojoColor;
+                //    }
+                //}
 
-                
+                //position dialog relative to word insertion point (caret)
+                int left = 0;
+                int top = 0;
+                int width = 0;
+                int height = 0;
+                Word.Range r = i_range;
+                Word.Window w = Globals.ThisAddIn.Application.ActiveWindow;
+
+                w.GetPoint(out left, out top, out width, out height, r);
+                //left = 0;
+                //top = 0;
+
+
+                Form2 newForm = new Form2();
+                newForm.Show();
+                //newForm.SetDesktopLocation(left + width + 2, top - newForm.Height + height);
+                newForm.SetBounds(left, top, width, height);
+                newForm.Location = new System.Drawing.Point(left, top);
+                newForm.Size = new System.Drawing.Size(width, height); 
+
             }
             catch (Exception e)
             {
@@ -277,7 +298,8 @@ namespace AsistenteDeEscritura
             {
 
                 string lex = lexemer.ComputeLexema(word.Text);
-                if (word.Text.Length > 3)
+                string trimmed = word.Text.ToLower().Trim();
+                if (trimmed.Length > 3)
                 {
                     if (wordDictionary.ContainsKey(lex))
                     {
