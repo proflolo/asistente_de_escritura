@@ -120,11 +120,17 @@ namespace AsistenteDeEscritura
             m_timer.AutoReset = true;
             m_timer.Enabled = true;
         }
-
+        bool m_processing = false;
         private void OnTimedEvent(Object source, ElapsedEventArgs e)
         {
-            //RefreshBoundsAsync();
-            ResaltarTodo();
+            //if(m_processing)
+            //{
+            //    return;
+            //}
+            //m_processing = true;
+            ////RefreshBoundsAsync();
+            //ResaltarTodo();
+            //m_processing = false;
         }
         enum FlagStrength
         {
@@ -174,7 +180,7 @@ namespace AsistenteDeEscritura
                 //if (i_fuerza == FlagStrength.Fuerte)
                 //{
                 //    i_range.Font.Underline = Word.WdUnderline.wdUnderlineWavyHeavy;
-                //    i_range.Font.UnderlineColor = k_fuerteColor;
+                //    i_range.Fornt.UnderlineColor = k_fuerteColor;
                 //}
                 //else
                 //{

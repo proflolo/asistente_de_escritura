@@ -35,21 +35,23 @@ namespace AsistenteDeEscritura
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.tab1 = this.Factory.CreateRibbonTab();
             this.group1 = this.Factory.CreateRibbonGroup();
+            this.separator3 = this.Factory.CreateRibbonSeparator();
+            this.separator2 = this.Factory.CreateRibbonSeparator();
+            this.separator1 = this.Factory.CreateRibbonSeparator();
+            this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.button1 = this.Factory.CreateRibbonButton();
             this.Rimas = this.Factory.CreateRibbonButton();
             this.button7 = this.Factory.CreateRibbonButton();
-            this.separator3 = this.Factory.CreateRibbonSeparator();
             this.button4 = this.Factory.CreateRibbonButton();
             this.button5 = this.Factory.CreateRibbonButton();
             this.button6 = this.Factory.CreateRibbonButton();
             this.Gerundios = this.Factory.CreateRibbonButton();
-            this.separator2 = this.Factory.CreateRibbonSeparator();
             this.frases = this.Factory.CreateRibbonButton();
             this.button2 = this.Factory.CreateRibbonButton();
             this.Guiones = this.Factory.CreateRibbonButton();
-            this.separator1 = this.Factory.CreateRibbonSeparator();
             this.button3 = this.Factory.CreateRibbonButton();
             this.estadisticasButton = this.Factory.CreateRibbonToggleButton();
             this.tab1.SuspendLayout();
@@ -83,6 +85,24 @@ namespace AsistenteDeEscritura
             this.group1.Label = "Asistente de Escritura";
             this.group1.Name = "group1";
             // 
+            // separator3
+            // 
+            this.separator3.Name = "separator3";
+            // 
+            // separator2
+            // 
+            this.separator2.Name = "separator2";
+            // 
+            // separator1
+            // 
+            this.separator1.Name = "separator1";
+            // 
+            // timer1
+            // 
+            this.timer1.Enabled = true;
+            this.timer1.Interval = 2000;
+            this.timer1.Tick += new System.EventHandler(this.timer1_Tick_1);
+            // 
             // button1
             // 
             this.button1.Image = global::AsistenteDeEscritura.Properties.Resources.writing2;
@@ -106,10 +126,6 @@ namespace AsistenteDeEscritura
             this.button7.Name = "button7";
             this.button7.ShowImage = true;
             this.button7.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.button7_Click);
-            // 
-            // separator3
-            // 
-            this.separator3.Name = "separator3";
             // 
             // button4
             // 
@@ -143,10 +159,6 @@ namespace AsistenteDeEscritura
             this.Gerundios.ShowImage = true;
             this.Gerundios.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.Gerundios_Click);
             // 
-            // separator2
-            // 
-            this.separator2.Name = "separator2";
-            // 
             // frases
             // 
             this.frases.Image = global::AsistenteDeEscritura.Properties.Resources.ruler;
@@ -170,10 +182,6 @@ namespace AsistenteDeEscritura
             this.Guiones.Name = "Guiones";
             this.Guiones.ShowImage = true;
             this.Guiones.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.Guiones_Click);
-            // 
-            // separator1
-            // 
-            this.separator1.Name = "separator1";
             // 
             // button3
             // 
@@ -226,6 +234,7 @@ namespace AsistenteDeEscritura
         internal Microsoft.Office.Tools.Ribbon.RibbonSeparator separator3;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton Guiones;
         internal Microsoft.Office.Tools.Ribbon.RibbonToggleButton estadisticasButton;
+        private System.Windows.Forms.Timer timer1;
     }
 
     partial class ThisRibbonCollection

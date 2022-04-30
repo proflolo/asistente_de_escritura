@@ -213,7 +213,10 @@ namespace AsistenteDeEscritura
             {
                 Word.Range range = kv.Key;
                 FlaggedRangeProperties props = kv.Value;
-                props.bounds.Apply();
+                if (props.bounds != null)
+                {
+                    props.bounds.Apply();
+                }
             }
             m_flaggedRangeMutex.ReleaseMutex();
             long t2 = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
@@ -271,7 +274,10 @@ namespace AsistenteDeEscritura
 
                 Word.Range start = (Word.Range)activeWindow.RangeFromPoint((int)startRangeX, (int)startRangeY);
                 Word.Range end = (Word.Range)activeWindow.RangeFromPoint((int)endRangeX, (int)endRangeY);
-
+                if(start == null || end == null)
+                {
+                    return null;
+                }
                 Word.Range r = activeWindow.Application.ActiveDocument.Range(start.Start, end.Start);
 
                 return r;
