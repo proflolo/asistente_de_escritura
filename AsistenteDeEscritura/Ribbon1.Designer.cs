@@ -47,8 +47,6 @@ namespace AsistenteDeEscritura
             this.button5 = this.Factory.CreateRibbonButton();
             this.button6 = this.Factory.CreateRibbonButton();
             this.Gerundios = this.Factory.CreateRibbonButton();
-            this.frases = this.Factory.CreateRibbonButton();
-            this.button2 = this.Factory.CreateRibbonButton();
             this.Guiones = this.Factory.CreateRibbonButton();
             this.button3 = this.Factory.CreateRibbonButton();
             this.estadisticasButton = this.Factory.CreateRibbonToggleButton();
@@ -74,8 +72,6 @@ namespace AsistenteDeEscritura
             this.group1.Items.Add(this.button6);
             this.group1.Items.Add(this.Gerundios);
             this.group1.Items.Add(this.separator2);
-            this.group1.Items.Add(this.frases);
-            this.group1.Items.Add(this.button2);
             this.group1.Items.Add(this.Guiones);
             this.group1.Items.Add(this.separator1);
             this.group1.Items.Add(this.button3);
@@ -151,22 +147,6 @@ namespace AsistenteDeEscritura
             this.Gerundios.ShowImage = true;
             this.Gerundios.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.Gerundios_Click);
             // 
-            // frases
-            // 
-            this.frases.Image = global::AsistenteDeEscritura.Properties.Resources.ruler;
-            this.frases.Label = "Frases Largas";
-            this.frases.Name = "frases";
-            this.frases.ShowImage = true;
-            this.frases.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.frases_Click);
-            // 
-            // button2
-            // 
-            this.button2.Image = global::AsistenteDeEscritura.Properties.Resources.partitura;
-            this.button2.Label = "Ritmo";
-            this.button2.Name = "button2";
-            this.button2.ShowImage = true;
-            this.button2.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.button2_Click);
-            // 
             // Guiones
             // 
             this.Guiones.Image = global::AsistenteDeEscritura.Properties.Resources.conversation_icon;
@@ -188,7 +168,7 @@ namespace AsistenteDeEscritura
             // 
             this.estadisticasButton.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
             this.estadisticasButton.Image = global::AsistenteDeEscritura.Properties.Resources.lupa;
-            this.estadisticasButton.Label = "Estadísticas";
+            this.estadisticasButton.Label = "Análisis";
             this.estadisticasButton.Name = "estadisticasButton";
             this.estadisticasButton.ShowImage = true;
             this.estadisticasButton.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.estadisticasButton_Click);
@@ -212,7 +192,6 @@ namespace AsistenteDeEscritura
         internal Microsoft.Office.Tools.Ribbon.RibbonTab tab1;
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup group1;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton button1;
-        internal Microsoft.Office.Tools.Ribbon.RibbonButton button2;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton Rimas;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton button3;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton button4;
@@ -221,7 +200,6 @@ namespace AsistenteDeEscritura
         internal Microsoft.Office.Tools.Ribbon.RibbonButton button5;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton button6;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton button7;
-        internal Microsoft.Office.Tools.Ribbon.RibbonButton frases;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton Gerundios;
         internal Microsoft.Office.Tools.Ribbon.RibbonSeparator separator3;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton Guiones;

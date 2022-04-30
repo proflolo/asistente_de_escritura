@@ -827,6 +827,46 @@ namespace AsistenteDeEscritura
             return result;
         }
 
+        public class FraseInfo
+        {
+            public FraseInfo(Word.Range i_frase, int i_longitud, int i_atomos)
+            {
+                frase = i_frase;
+                longitud = i_longitud;
+                atomos = i_atomos;
+            }
+
+            public int longitud;
+            public int atomos;
+            public Word.Range frase;
+           
+        }
+
+        public IList<FraseInfo> ComputeFraseUsage()
+        {
+            List<FraseInfo> result = new List<FraseInfo>();
+            
+
+            Word.Range documentRange = GetSelectedRange();
+            foreach (Word.Range sentence in documentRange.Sentences)
+            {
+                int ritmo = 1;
+                int numPalabras = sentence.Words.Count;
+                foreach (Word.Range word in sentence.Words)
+                {
+                    Match match = m_rithmSeparatorExpression.Match(word.Text);
+                    if (match != null && match.Success)
+                    {
+                        ritmo++;
+                    }
+                }
+                FraseInfo info = new FraseInfo(sentence, numPalabras, ritmo);
+                result.Add(info);
+            }
+
+            return result;
+        }
+
         private void ResaltaDeLista(Word.Range i_documentRange, HashSet<string> i_list)
         {
             ProgressDisplay progressUpdater = new ProgressDisplay(k_limiparTotal + i_documentRange.Words.Count);
