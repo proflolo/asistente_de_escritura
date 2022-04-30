@@ -87,5 +87,10 @@ namespace AsistenteDeEscritura
         {
             Globals.ThisAddIn.MuestraEstadisticas(estadisticasButton.Checked, () => { estadisticasButton.Checked = false;});
         }
+
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            Globals.ThisAddIn.ResaltarTodo();
+        }
     }
 }

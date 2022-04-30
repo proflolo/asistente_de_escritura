@@ -9,15 +9,15 @@ using Office = Microsoft.Office.Core;
 using Microsoft.Office.Tools.Word;
 using System.Text.RegularExpressions;
 using System.ComponentModel;
+using System.Timers;
 
-[DllImport("user32.dll")]
-static extern bool EnableWindow(IntPtr hWnd, bool bEnable);
+//[DllImport("user32.dll")]
+//static extern bool EnableWindow(IntPtr hWnd, bool bEnable);
 
 namespace AsistenteDeEscritura
 {
     public partial class ThisAddIn
     {
-        List<Word.Range> m_palabrasResaltadas;
         Regex m_rithmSeparatorExpression = new Regex("^[,;yo]\\s*$");
         Regex m_acento = new Regex("[áéíóú]");
         Regex m_aguda = new Regex("[aeiouns]$");
@@ -33,8 +33,8 @@ namespace AsistenteDeEscritura
         List<string> m_prefijos = new List<string>(Constantes.k_prefijos);
         List<string> m_sufijos = new List<string>(Constantes.k_sufijos);
         HashSet<string> m_comunes = new HashSet<string>();
-        Word.WdColor k_flojoColor = Word.WdColor.wdColorOrange;
-        Word.WdColor k_fuerteColor = Word.WdColor.wdColorPlum;
+        System.Timers.Timer m_timer;
+        Form2 m_overlay;
         static int k_limiparTotal = 100;
         class ComparadorDeMorfemas : IComparer<string>
         {
@@ -61,8 +61,8 @@ namespace AsistenteDeEscritura
 
         private void ThisAddIn_Startup(object sender, System.EventArgs e)
         {
-            m_palabrasResaltadas = new List<Word.Range>();
             this.Application.DocumentBeforeSave += new Word.ApplicationEvents4_DocumentBeforeSaveEventHandler(OnBeforeSave);
+            this.Application.WindowSelectionChange += new Word.ApplicationEvents4_WindowSelectionChangeEventHandler(DocumentSelectionChanged);
             ComparadorDeMorfemas comparador = new ComparadorDeMorfemas();
             m_prefijos.Sort(comparador);
             m_sufijos.Sort(comparador);
@@ -85,7 +85,19 @@ namespace AsistenteDeEscritura
             m_statsPane = CustomTaskPanes.Add(m_statsWidget, "Estadísticas");
             m_statsPane.VisibleChanged += (object _sender, EventArgs _e) => { OnPanelVisibilityChanged(); };
             m_statsPane.Visible = false;
+            m_overlay = new Form2();
+            m_overlay.Show();
+            SetTimer();
+            
+
         }
+        //This happens when the cursor moves too
+        private void DocumentSelectionChanged(Word.Selection i_selection)
+        {
+            //Document vstoDoc = Globals.Factory.GetVstoObject(this.Application.ActiveDocument);
+            //vstoDoc.SelectionChange += new Microsoft.Office.Tools.Word.SelectionEventHandler(ThisDocument_SelectionChange);
+        }
+
 
         private void OnBeforeSave(Word.Document Doc, ref bool SaveAsUI, ref bool Cancel)
         {
@@ -97,6 +109,22 @@ namespace AsistenteDeEscritura
 
         private void ThisAddIn_Shutdown(object sender, System.EventArgs e)
         {
+        }
+
+        private void SetTimer()
+        {
+            // Create a timer with a two second interval.
+            m_timer = new System.Timers.Timer(2000);
+            // Hook up the Elapsed event for the timer. 
+            m_timer.Elapsed += OnTimedEvent;
+            m_timer.AutoReset = true;
+            m_timer.Enabled = true;
+        }
+
+        private void OnTimedEvent(Object source, ElapsedEventArgs e)
+        {
+            //RefreshBoundsAsync();
+            ResaltarTodo();
         }
         enum FlagStrength
         {
@@ -135,10 +163,14 @@ namespace AsistenteDeEscritura
             return LimpiarResult.ContinueProcessing;
         }
 
-        private void FlagRange(Word.Range i_range, FlagStrength i_fuerza)
+
+        private void FlagRange(Word.Range i_range, IFlagReason i_reason)
         {
+         
+            
             try
             {
+                m_overlay.FlagRange(i_range, i_reason);
                 //if (i_fuerza == FlagStrength.Fuerte)
                 //{
                 //    i_range.Font.Underline = Word.WdUnderline.wdUnderlineWavyHeavy;
@@ -152,35 +184,11 @@ namespace AsistenteDeEscritura
                 //        i_range.Font.UnderlineColor = k_flojoColor;
                 //    }
                 //}
-
-                //position dialog relative to word insertion point (caret)
-                int left = 0;
-                int top = 0;
-                int width = 0;
-                int height = 0;
-                Word.Range r = i_range;
-                Word.Window w = Globals.ThisAddIn.Application.ActiveWindow;
-
-                w.GetPoint(out left, out top, out width, out height, r);
-                //left = 0;
-                //top = 0;
-
-
-                Form2 newForm = new Form2();
-                newForm.Show();
-                //newForm.SetDesktopLocation(left + width + 2, top - newForm.Height + height);
-                newForm.SetBounds(left, top, width, height);
-                newForm.Location = new System.Drawing.Point(left, top);
-                newForm.Size = new System.Drawing.Size(width, height); 
-
             }
             catch (Exception e)
             {
-                int i = 0;
-                i++;
+                
             }
-            
-            m_palabrasResaltadas.Add(i_range);
         }
 
         private void FlagRangewithColor(Word.Range i_range, Word.WdColor i_color)
@@ -192,11 +200,8 @@ namespace AsistenteDeEscritura
             }
             catch (Exception e)
             {
-                int i = 0;
-                i++;
+                
             }
-
-            m_palabrasResaltadas.Add(i_range);
         }
 
         public void ResaltarRepeticiones()
@@ -250,14 +255,14 @@ namespace AsistenteDeEscritura
                         if (word.Start - previousWord.Start < 50)
                         {
                             //Repetición cercana!
-                            FlagRange(word, FlagStrength.Fuerte);
-                            FlagRange(previousWord, FlagStrength.Fuerte);
+                            FlagRange(word, new FlagReasonRepetitionClose()) ;
+                            FlagRange(previousWord, new FlagReasonRepetitionClose());
                         }
                         else if (word.Start - previousWord.Start < 100)
                         {
                             //repeticion lejana
-                            FlagRange(word, FlagStrength.Flojo);
-                            FlagRange(previousWord, FlagStrength.Flojo);
+                            FlagRange(word, new FlagReasonRepetitionDistant());
+                            FlagRange(previousWord, new FlagReasonRepetitionDistant());
                         }
                         else
                         {
@@ -331,14 +336,14 @@ namespace AsistenteDeEscritura
                         if (word.Start - previousWord.Start < 50)
                         {
                             //Repetición cercana!
-                            FlagRange(word, FlagStrength.Fuerte);
-                            FlagRange(previousWord, FlagStrength.Fuerte);
+                            FlagRange(word, new FlagReasonRepetitionClose());
+                            FlagRange(previousWord, new FlagReasonRepetitionClose());
                         }
                         else if (word.Start - previousWord.Start < 100)
                         {
                             //repeticion lejana
-                            FlagRange(word, FlagStrength.Flojo);
-                            FlagRange(previousWord, FlagStrength.Flojo);
+                            FlagRange(word, new FlagReasonRepetitionDistant());
+                            FlagRange(previousWord, new FlagReasonRepetitionDistant());
                         }
                         else
                         {
@@ -544,8 +549,8 @@ namespace AsistenteDeEscritura
                         if (word.Start - previousWord.Start < 20)
                         {
                             //Repetición cercana!
-                            FlagRange(word, FlagStrength.Fuerte);
-                            FlagRange(previousWord, FlagStrength.Fuerte);
+                            FlagRange(word, new FlagReasonRimeConsonant());
+                            FlagRange(previousWord, new FlagReasonRimeConsonant());
                         }
                         else
                         {
@@ -575,8 +580,8 @@ namespace AsistenteDeEscritura
                         if (word.Start - previousWord.Start < 20)
                         {
                             //Repetición cercana!
-                            FlagRange(word, FlagStrength.Flojo);
-                            FlagRange(previousWord, FlagStrength.Flojo);
+                            FlagRange(word, new FlagReasonRimeAsonant());
+                            FlagRange(previousWord, new FlagReasonRimeAsonant());
                         }
                         else
                         {
@@ -609,7 +614,7 @@ namespace AsistenteDeEscritura
                     Match adverbioMente = m_adverbioMente.Match(text);
                     if (adverbioMente != null && adverbioMente.Success)
                     {
-                        FlagRange(word, FlagStrength.Flojo);
+                        FlagRange(word, new FlagReasonAdverbioMente());
                     }
                 }
                 i++;
@@ -635,7 +640,7 @@ namespace AsistenteDeEscritura
                     Match gerundio = m_gerundio.Match(text);
                     if (gerundio != null && gerundio.Success)
                     {
-                        FlagRange(word, FlagStrength.Flojo);
+                        FlagRange(word, new FlagReasonGerundio());
                     }
                 }
 
@@ -716,7 +721,7 @@ namespace AsistenteDeEscritura
                                 if(endsInPunto)
                                 {
                                     //Error, los dicientes no pueden tener un punto al final del dialogo
-                                    FlagRange(previousWord, FlagStrength.Flojo);
+                                    FlagRange(previousWord, new FlagReasonGuion());
                                 }
                             }
                             else
@@ -724,7 +729,7 @@ namespace AsistenteDeEscritura
                                 if(!endsInPunto && !endsInSigno)
                                 {
                                     //Error, es No diciente y no termina en punto
-                                    FlagRange(previousWord, FlagStrength.Flojo);
+                                    FlagRange(previousWord, new FlagReasonGuion());
                                 }
                             }
                         }
@@ -740,7 +745,7 @@ namespace AsistenteDeEscritura
                                 if (!lastText.EndsWith(" "))
                                 {
                                     //Error, falta espacio.
-                                    FlagRange(word, FlagStrength.Fuerte);
+                                    FlagRange(word, new FlagReasonGuion());
                                 }   
                             }
                             else
@@ -751,7 +756,7 @@ namespace AsistenteDeEscritura
                                     if (!endsInPunto)
                                     {
                                         //Punto tras cerrar la acotacion narrativa
-                                        FlagRange(word, FlagStrength.Fuerte);
+                                        FlagRange(word, new FlagReasonGuion());
                                     }
                                 }
                             }
@@ -849,7 +854,7 @@ namespace AsistenteDeEscritura
             return result;
         }
 
-        private void ResaltaDeLista(Word.Range i_documentRange, HashSet<string> i_list)
+        private void ResaltaDeLista(Word.Range i_documentRange, HashSet<string> i_list, IFlagReason i_reason)
         {
             ProgressDisplay progressUpdater = new ProgressDisplay(k_limiparTotal + i_documentRange.Words.Count);
             LimiparPalabrasResaltadas(i_documentRange, progressUpdater);
@@ -859,7 +864,7 @@ namespace AsistenteDeEscritura
                 string text = word.Text.ToLower().Trim();
                 if(i_list.Contains(text))
                 {
-                    FlagRange(word, FlagStrength.Flojo);
+                    FlagRange(word, i_reason);
                 }
 
                 if (progressUpdater.UpdateProgress(k_limiparTotal + i) == ProgressDisplay.UpdateResult.Quit)
@@ -876,7 +881,7 @@ namespace AsistenteDeEscritura
         {
             Globals.ThisAddIn.Application.UndoRecord.StartCustomRecord("repeticiones");
             Word.Range documentRange = GetSelectedRange();
-            ResaltaDeLista(documentRange, m_dicientes);
+            ResaltaDeLista(documentRange, m_dicientes, new FlagReasonDiciente());
             Globals.ThisAddIn.Application.UndoRecord.EndCustomRecord();
         }
 
@@ -884,7 +889,7 @@ namespace AsistenteDeEscritura
         {
             Globals.ThisAddIn.Application.UndoRecord.StartCustomRecord("repeticiones");
             Word.Range documentRange = GetSelectedRange();
-            ResaltaDeLista(documentRange, m_adjetivos);
+            ResaltaDeLista(documentRange, m_adjetivos, new FlagReasonAdjetivo());
             Globals.ThisAddIn.Application.UndoRecord.EndCustomRecord();
 
         }
@@ -1017,8 +1022,8 @@ namespace AsistenteDeEscritura
                         if (info.start - previousSilaba.Value.start < 14 && info.palabraIdx != previousSilaba.Value.palabraIdx)
                         {
                             //Repetición cercana!
-                            FlagRange(info.word, FlagStrength.Flojo);
-                            FlagRange(previousSilaba.Value.word, FlagStrength.Flojo);
+                            FlagRange(info.word, new FlagReasonCacofonia());
+                            FlagRange(previousSilaba.Value.word, new FlagReasonCacofonia());
                         }
                         else
                         {
@@ -1062,7 +1067,7 @@ namespace AsistenteDeEscritura
                 {
                     foreach (Word.Range word in sentence.Words)
                     {
-                        FlagRange(word, FlagStrength.Fuerte);
+                        FlagRange(word, new FlagReasonFraseLarga(sentence.Words.Count));
                     }
                 }
 
@@ -1070,7 +1075,7 @@ namespace AsistenteDeEscritura
                 {
                     foreach (Word.Range word in sentence.Words)
                     {
-                        FlagRange(word, FlagStrength.Flojo);
+                        FlagRange(word, new FlagReasonFraseLarga(sentence.Words.Count));
                     }
                 }
                 if (progressUpdater.UpdateProgress(k_limiparTotal + i) == ProgressDisplay.UpdateResult.Quit)
@@ -1108,6 +1113,16 @@ namespace AsistenteDeEscritura
             if(!m_visibilityChangeRequestedByUser)
             {
                 m_panelClosedCallback();
+            }
+        }
+
+        public void ResaltarTodo()
+        {
+            if (Globals.ThisAddIn.Application != null && Globals.ThisAddIn.Application.Documents.Count > 0)
+            {
+                m_overlay.BeginProcess();
+                ResaltarRepeticionesLexemas();
+                m_overlay.EndProcess();
             }
         }
 
