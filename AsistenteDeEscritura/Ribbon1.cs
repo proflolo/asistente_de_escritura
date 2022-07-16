@@ -70,6 +70,7 @@ namespace AsistenteDeEscritura
         private void Gerundios_Click(object sender, RibbonControlEventArgs e)
         {
             Globals.ThisAddIn.ResaltarGerundios();
+            
         }
 
         private void Guiones_Click(object sender, RibbonControlEventArgs e)

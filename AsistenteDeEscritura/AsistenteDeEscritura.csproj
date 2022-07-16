@@ -179,6 +179,7 @@
     can be found.
   -->
   <ItemGroup>
+    <Compile Include="InterceptKeys.cs" />
     <Compile Include="Lexemer.cs" />
     <Compile Include="ProgressDisplay.cs" />
     <Compile Include="Constantes.cs" />
