@@ -39,7 +39,7 @@ namespace AsistenteDeEscritura
                 if (nCode == HC_ACTION)
                 {
                     Keys keyData = (Keys)wParam;
-                    if (keyData == Keys.F4)
+                    if (keyData == Keys.F9)
                     {
                         if (isCalled)
                         {

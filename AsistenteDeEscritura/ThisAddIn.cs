@@ -92,12 +92,11 @@ namespace AsistenteDeEscritura
             //Word.Range documentRange = this.Application.ActiveDocument.Range();
             //LimiparPalabrasResaltadas(documentRange);
             //this.Application.UndoRecord.EndCustomRecord();
-            AsistenteDeEscritura.InterceptKeys.ReleaseHook();
         }
 
         private void ThisAddIn_Shutdown(object sender, System.EventArgs e)
         {
-            AsistenteDeEscritura.InterceptKeys.SetHook();
+            AsistenteDeEscritura.InterceptKeys.ReleaseHook();
         }
         enum FlagStrength
         {
@@ -292,19 +291,21 @@ namespace AsistenteDeEscritura
             int i = 0;
             foreach (Word.Range word in i_range.Words)
             {
-
-                string lex = lexemer.ComputeLexema(word.Text);
-                if (word.Text.Length > 4)
+                if (word.Text != null)
                 {
-                    if (wordDictionary.ContainsKey(lex))
+                    string lex = lexemer.ComputeLexema(word.Text);
+                    if (word.Text.Length > 4)
                     {
-                        wordDictionary[lex].Add(word);
-                    }
-                    else
-                    {
-                        List<Word.Range> wordRanges = new List<Word.Range>();
-                        wordRanges.Add(word);
-                        wordDictionary.Add(lex, wordRanges);
+                        if (wordDictionary.ContainsKey(lex))
+                        {
+                            wordDictionary[lex].Add(word);
+                        }
+                        else
+                        {
+                            List<Word.Range> wordRanges = new List<Word.Range>();
+                            wordRanges.Add(word);
+                            wordDictionary.Add(lex, wordRanges);
+                        }
                     }
                 }
                 if (progressUpdater.UpdateProgress(k_limiparTotal + i) == ProgressDisplay.UpdateResult.Quit)
@@ -380,19 +381,18 @@ namespace AsistenteDeEscritura
                     int end = paragraph.Range.End;
                     if(start <= selectionStart && end >= selectionEnd)
                     {
-                        Word.Range previousP = paragraph.Previous().Range;
-                        Word.Range currentP =  paragraph.Range;
-                        Word.Range nextP = paragraph.Next().Range;
+
+                        Word.Range currentP = paragraph.Range;
                         int min = currentP.Start;
                         int max = currentP.End;
-                        if(previousP != null)
+                        if(paragraph.Previous() != null && paragraph.Previous().Range != null)
                         {
-                            min = previousP.Start;
+                            min = paragraph.Previous().Range.Start;
                         }
 
-                        if (nextP != null)
+                        if (paragraph.Next() != null && paragraph.Next().Range != null)
                         {
-                            max = nextP.End;
+                            max = paragraph.Next().Range.End;
                         }
                         return this.Application.ActiveDocument.Range(min, max);
                     }
@@ -535,31 +535,34 @@ namespace AsistenteDeEscritura
             int i = 0;
             foreach (Word.Range word in i_range.Words)
             {
-                string raw = word.Text.ToLower().Trim();
-                string rimaConsonante = ComputeRima(raw);
-                string rimaAsonante = m_consonante.Replace(rimaConsonante, "_");
-                if (raw.Length > 3)
+                if (word.Text != null)
                 {
-                    if (rimeConsonanteDictionary.ContainsKey(rimaConsonante))
+                    string raw = word.Text.ToLower().Trim();
+                    string rimaConsonante = ComputeRima(raw);
+                    string rimaAsonante = m_consonante.Replace(rimaConsonante, "_");
+                    if (raw.Length > 3)
                     {
-                        rimeConsonanteDictionary[rimaConsonante].Add(word);
-                    }
-                    else
-                    {
-                        List<Word.Range> wordRanges = new List<Word.Range>();
-                        wordRanges.Add(word);
-                        rimeConsonanteDictionary.Add(rimaConsonante, wordRanges);
-                    }
+                        if (rimeConsonanteDictionary.ContainsKey(rimaConsonante))
+                        {
+                            rimeConsonanteDictionary[rimaConsonante].Add(word);
+                        }
+                        else
+                        {
+                            List<Word.Range> wordRanges = new List<Word.Range>();
+                            wordRanges.Add(word);
+                            rimeConsonanteDictionary.Add(rimaConsonante, wordRanges);
+                        }
 
-                    if (rimeAsonanteDictionary.ContainsKey(rimaAsonante))
-                    {
-                        rimeAsonanteDictionary[rimaAsonante].Add(word);
-                    }
-                    else
-                    {
-                        List<Word.Range> wordRanges = new List<Word.Range>();
-                        wordRanges.Add(word);
-                        rimeAsonanteDictionary.Add(rimaAsonante, wordRanges);
+                        if (rimeAsonanteDictionary.ContainsKey(rimaAsonante))
+                        {
+                            rimeAsonanteDictionary[rimaAsonante].Add(word);
+                        }
+                        else
+                        {
+                            List<Word.Range> wordRanges = new List<Word.Range>();
+                            wordRanges.Add(word);
+                            rimeAsonanteDictionary.Add(rimaAsonante, wordRanges);
+                        }
                     }
                 }
                 if (progressUpdater.UpdateProgress(k_limiparTotal + i) == ProgressDisplay.UpdateResult.Quit)
@@ -1049,28 +1052,31 @@ namespace AsistenteDeEscritura
             foreach (Word.Range word in i_documentRange.Words)
             {
                 int silabaPosition = 0;
-                string text = RemoveAccents(word.Text.ToLower().Trim());
-                Match match = m_alfaNumerico.Match(text);
-                if (match != null && match.Success)
+                if (word.Text != null)
                 {
-                    List<string> silabas = SeparaSilabas(text);
-                    foreach (string silaba in silabas)
+                    string text = RemoveAccents(word.Text.ToLower().Trim());
+                    Match match = m_alfaNumerico.Match(text);
+                    if (match != null && match.Success)
                     {
-                        SilabaInfo info = new SilabaInfo();
-                        info.word = word;
-                        info.start = word.Start + silabaPosition;
-                        info.palabraIdx = idx;
-                        if (silabaDictionary.ContainsKey(silaba))
+                        List<string> silabas = SeparaSilabas(text);
+                        foreach (string silaba in silabas)
                         {
-                            silabaDictionary[silaba].Add(info);
+                            SilabaInfo info = new SilabaInfo();
+                            info.word = word;
+                            info.start = word.Start + silabaPosition;
+                            info.palabraIdx = idx;
+                            if (silabaDictionary.ContainsKey(silaba))
+                            {
+                                silabaDictionary[silaba].Add(info);
+                            }
+                            else
+                            {
+                                List<SilabaInfo> list = new List<SilabaInfo>();
+                                list.Add(info);
+                                silabaDictionary.Add(silaba, list);
+                            }
+                            silabaPosition += silaba.Length;
                         }
-                        else
-                        {
-                            List<SilabaInfo> list = new List<SilabaInfo>();
-                            list.Add(info);
-                            silabaDictionary.Add(silaba, list);
-                        }
-                        silabaPosition += silaba.Length;
                     }
                 }
                 idx++;
